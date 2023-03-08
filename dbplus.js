@@ -30,8 +30,8 @@
         result = result / i;
         return result;
     }
-    console.log(get_avg_student_grade());
-    console.log(get_avg_student_grade() / 25);
+    console.log(get_student_grade());
+    console.log(get_student_grade() / 25);
 
     // Class grades
     function get_class_grade() {
@@ -42,16 +42,19 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
-            let numerator = parseFloat(element.childNodes[5].innerText);
-            let denominator = parseFloat(element.childNodes[7].innerText);
-            weight_sum += parseFloat(element.childNodes[6].innerText);
+            let nodes = element.childNodes;
+            let numerator = parseFloat(nodes[5].innerText);
+            if(!numerator) numerator = 0;
+            let denominator = parseFloat(nodes[7].innerText);
+            let weight = parseFloat(nodes[6].innerText);
 
-            result += numerator / denominator;
+            result += numerator / denominator * weight;
             weight_sum += weight;
             i++
         }
-        result = result / i;
-        return result;
+        result = result / weight_sum;
+        return result * 100;
     }
+    console.log(get_class_grade());
 
 })();
