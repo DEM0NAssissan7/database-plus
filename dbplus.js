@@ -16,11 +16,29 @@
     function get_path(path) {
         return document.querySelector(path);
     }
-    function round(number) {
+    function round(number, accuracy) {
+        if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
     }
     function get_elements(name) {
         return document.getElementsByClassName(name)
+    }
+    function get_letter_grade(grade) {
+        let result = "F";
+        function test(min_value, letter) {
+            if(grade >= min_value) result = letter;
+        }
+        test(59, "F");
+        test(60, "D");
+        test(65, "D+");
+        test(70, "C");
+        test(75, "C+");
+        test(80, "B");
+        test(85, "B+");
+        test(90, "A");
+        test(95, "A+");
+        test(101, "A++");
+        return result;
     }
 
 
@@ -43,7 +61,9 @@
             element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
             element.childNodes[6].contentEditable=true; // Set to editable
-            result += parseFloat(element.childNodes[6].innerText);
+            let grade = parseFloat(element.childNodes[6].innerText);
+            result += grade;
+            element.childNodes[5].textContent = get_letter_grade(grade);
             i++;
         }
         result = result / i;
@@ -80,7 +100,7 @@
     // Program DOM element
     let dom_element;
     function add_dom_element() {
-        dom_element = document.createElement("dbp");
+        dom_element = document.createElement("div");
         dom_element.id = "dbp";
         const text = document.createTextNode("Database Plus");
         dom_element.appendChild(text);
@@ -96,10 +116,12 @@
 
     // Styling
     function apply_styling() {
-        // Background
-        document.body.style.background = "gray";
-        // Get rid of middle bar
+        // Fonts
+        document.body.style.fontFamily = "'Raleway', Helvetica, sans-serif"
+        document.body.style.fontSize = "14px"
+        // Get rid of useless elements
         get_elements("middle")[0].remove();
+        get_elements("footer")[0].remove();
     }
     apply_styling();
 
@@ -111,12 +133,12 @@
         switch(page_type) {
             case "student":
                 gpa = round(get_gpa());
-                grade = round(get_student_grade());
-                change_dom_text("GPA: " + gpa + " (" + grade + "%)");
+                grade = round(get_student_grade(), 1);
+                change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " (" + grade + "%)");
                 break;
             case "class":
-                grade = round(get_class_grade());
-                change_dom_text(grade + "%");
+                grade = round(get_class_grade(), 1);
+                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
                 break;
         }
     }
