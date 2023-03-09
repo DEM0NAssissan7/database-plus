@@ -20,6 +20,9 @@
 (function() {
     'use strict';
 
+    // Options
+    const apply_theming = false;
+
     // General function
     function get_path(path) {
         return document.querySelector(path);
@@ -99,9 +102,11 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
-            element.style.color = "black"
+            if(apply_theming) {
+                element.style.color = "black"
+                element.childNodes[6].style.color="#555555"
+            }
             element.childNodes[6].contentEditable=true; // Set to editable
-            element.childNodes[6].style.color="#555555"
             let grade = get_num(element.childNodes[6].innerText);
             result += grade;
             element.childNodes[5].textContent = get_letter_grade(grade);
@@ -138,11 +143,13 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
-            element.style.color = "black"
             let nodes = element.childNodes;
             let numerator = get_num(nodes[5].innerText);
             nodes[5].contentEditable=true; // Set to editable
-            nodes[5].style.color = "#555555";
+            if(apply_theming) {
+                nodes[5].style.color = "#555555";
+                element.style.color = "black"
+            }
             if(!numerator) numerator = 0;
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
@@ -274,7 +281,7 @@
         element.style.background = "black";
         element.style.color = "white";
     }
-    apply_styling();
+    if(apply_theming) apply_styling();
 
     // Main program handler
     function program_handler() {
@@ -283,19 +290,19 @@
         let grade, gpa, real_gpa;
         switch(page_type) {
             case "student":
-                student_theme();
+                if(apply_theming) student_theme();
                 grade = round(get_student_grade(), 1);
                 gpa = round(get_gpa());
                 real_gpa = round(get_real_gpa());
                 change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
                 break;
             case "class":
-                class_theme();
+                if(apply_theming) class_theme();
                 grade = round(get_class_grade(), 1);
                 change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
                 break;
             case "menu":
-                student_theme();
+                if(apply_theming) student_theme();
                 break;
         }
     }
