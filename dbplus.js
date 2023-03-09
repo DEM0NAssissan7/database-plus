@@ -88,12 +88,12 @@
     // Page type
     function get_page_type() {
 
+        if(get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)"))
+            return "menu"
         if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)"))
             return "student"
         if(get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(2)"))
             return "class"
-        if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)"))
-            return "menu"
         return "none"
     }
 
@@ -104,7 +104,7 @@
         let i = 0;
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if(element === null) break;
+            if(!element) break;
             if(apply_theming) {
                 element.style.color = "black"
                 element.childNodes[6].style.color="#555555"
@@ -208,6 +208,7 @@
         nodes[3].appendChild(select);
     }
     safe_run(probe_assignment_groups);
+    safe_run(update_percentages);
 
     // Class grades
     function get_class_grade() {
@@ -416,6 +417,7 @@
                 break;
             case "class":
                 if(apply_theming) class_theme();
+                update_percentages();
                 grade = round(get_class_grade(), 1);
                 change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
                 break;
@@ -427,6 +429,7 @@
 
     // Add event listener to recalculate grades when a key gets pressed down
     document.addEventListener('keydown', () => {setTimeout(program_handler, 50)});
+    document.addEventListener('mouseup', () => {setTimeout(program_handler, 50)});
 
     // Run initial program
     program_handler();
