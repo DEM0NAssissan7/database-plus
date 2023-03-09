@@ -23,6 +23,9 @@
     function get_elements(name) {
         return document.getElementsByClassName(name)
     }
+    function create_element(tag_name) {
+        return document.createElement(tag_name);
+    }
     function get_letter_grade(grade) {
         let result = "F";
         function test(min_value, letter) {
@@ -120,7 +123,7 @@
     // Program DOM element
     let dom_element;
     function add_dom_element() {
-        dom_element = document.createElement("div");
+        dom_element = create_element("div");
         dom_element.id = "dbp";
         const text = document.createTextNode("Database+");
         dom_element.appendChild(text);
@@ -147,6 +150,18 @@
         // Rename header
         get_elements("header")[0].textContent = "Database+"
         get_elements("header")[0].borderRadius = "10px"
+        // Change site title
+        document.title = "Peace Database+"
+        // Set site icon
+        {
+            var link = get_path("link[rel~='icon']");
+            if (!link) {
+                link = create_element('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = "https://static.toiimg.com/thumb/msid-51767839,imgsize-17046,width-400,resizemode-4/51767839.jpg";
+        }
     }
     function student_theme() {
         let element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)");
