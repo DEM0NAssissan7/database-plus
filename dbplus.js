@@ -60,6 +60,16 @@
         test(4, "A++");
         return result;
     }
+    function safe_run(handler) {
+        try {
+            handler();
+        } catch (e) {}
+    }
+    function get_num(string) {
+        let parse_float = parseFloat(string);
+        if(parse_float) return parse_float;
+        return 0;
+    }
 
     // Page type
     function get_page_type() {
@@ -81,8 +91,10 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
+            element.style.color = "black"
             element.childNodes[6].contentEditable=true; // Set to editable
-            let grade = parseFloat(element.childNodes[6].innerText);
+            element.childNodes[6].style.color="#555555"
+            let grade = get_num(element.childNodes[6].innerText);
             result += grade;
             element.childNodes[5].textContent = get_letter_grade(grade);
             i++;
@@ -118,12 +130,14 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
+            element.style.color = "black"
             let nodes = element.childNodes;
-            let numerator = parseFloat(nodes[5].innerText);
+            let numerator = get_num(nodes[5].innerText);
             nodes[5].contentEditable=true; // Set to editable
+            nodes[5].style.color = "#555555";
             if(!numerator) numerator = 0;
-            let denominator = parseFloat(nodes[7].innerText);
-            let weight = parseFloat(nodes[6].innerText);
+            let denominator = get_num(nodes[7].innerText);
+            let weight = get_num(nodes[6].innerText);
 
             result += numerator / denominator * weight;
             weight_sum += weight;
@@ -175,6 +189,13 @@
             }
             link.href = "https://static.toiimg.com/thumb/msid-51767839,imgsize-17046,width-400,resizemode-4/51767839.jpg";
         }
+        // Set site background
+        document.body.style.background = "white"
+        // Remove border around inner part
+        safe_run(() => {get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(2) > td").style.borderWidth = "0px";})
+        // Make border around window bigger
+        safe_run(() => {get_path("#form2 > div:nth-child(3) > table").style.borderWidth = "3px";})
+        safe_run(() => {get_path("#form2 > div:nth-child(3) > table").style.borderCollapse = "collapse";})
     }
     function student_theme() {
         let element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)");
@@ -183,8 +204,7 @@
     }
     function class_theme() {
         let element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(1)");
-        element.style.background = "rgba(0,0,0,0.8)";
-        element.style.backdropFilter = "blur(2px)"
+        element.style.background = "black";
         element.style.color = "white";
     }
     apply_styling();
