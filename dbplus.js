@@ -197,9 +197,9 @@
         switch(page_type) {
             case "student":
                 student_theme();
+                grade = round(get_student_grade(), 1);
                 gpa = round(get_gpa());
                 real_gpa = round(get_real_gpa());
-                grade = round(get_student_grade(), 1);
                 change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
                 break;
             case "class":
@@ -214,7 +214,7 @@
     }
 
     // Add event listener to recalculate grades when a key gets pressed down
-    document.addEventListener('keydown', () => {setTimeout(program_handler, 100)});
+    document.addEventListener('keydown', () => {setTimeout(program_handler, 50)});
 
     // Run initial program
     program_handler();
