@@ -165,7 +165,13 @@
         for(let group of assignment_groups)
             group.percentage = Math.round(group.percentage);
     }
-    function get_assignment_group(name) {
+    function get_assignment_group(node) {
+
+        let name = node.childNodes[3].innerText;
+        for(let group of assignment_groups)
+            if(group.name === name) return group;
+        // If the node is a drop-down
+        name = node.childNodes[3].firstChild.selectedOptions[0].innerText;
         for(let group of assignment_groups)
             if(group.name === name) return group;
         return null;
@@ -175,11 +181,8 @@
         for(let i = 0;;i++) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if (element === null) break;
-            let nodes = element.childNodes;
-            let group = get_assignment_group(nodes[3].textContent);
-            if(!group)
-                group = get_assignment_group(nodes[3].firstChild.selectedOptions[0].innerText);
-            nodes[6].textContent = round(group.percentage / group.count) + " %";
+            let group = get_assignment_group(element);
+            element.childNodes[6].textContent = round(group.percentage / group.count) + " %";
         }
     }
     function add_assignment_group_button(node) {
@@ -195,7 +198,7 @@
         let group = {count: 0};
         function change_percentage() {
             group.count--;
-            group = get_assignment_group(select.selectedOptions[0].innerText);
+            group = get_assignment_group(node);
             nodes[6].textContent = select.value;
             group.count++;
             update_percentages();
@@ -312,6 +315,8 @@
         button.id = "button" + buttons;
         button.type = "button"
         function delete_row() {
+            get_assignment_group(node).count--;
+            update_percentages();
             node.remove();
             program_handler();
         }
