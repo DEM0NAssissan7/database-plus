@@ -165,11 +165,16 @@
     }
 
     // Append class
+    let clone;
     let clones = 0;
+    safe_run(() => {
+        let element = document.getElementById("ContentPlaceHolder1_GridView1").lastChild;
+        clone = element.childNodes[2].cloneNode(true);
+    });
     function append_class() {
         clones++;
         let element = document.getElementById("ContentPlaceHolder1_GridView1").lastChild;
-        let node = element.childNodes[2].cloneNode(true);
+        let node = clone.cloneNode(true);
         if(!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "Class " + clones;
@@ -178,6 +183,7 @@
         node.childNodes[3].contentEditable = true;
         node.childNodes[5].textContent = "F";
         node.childNodes[6].textContent = "0.00";
+        add_remove_button(node);
         element.appendChild(node);
         program_handler();
     }
@@ -192,10 +198,14 @@
     safe_run(add_class_append_button)
 
     // Append assignment
+    safe_run(() => {
+        let element = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1];
+        clone = element.childNodes[2].cloneNode(true);
+    });
     function append_assignment() {
         clones++;
         let element = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1];
-        let node = element.childNodes[2].cloneNode(true);
+        let node = clone.cloneNode(true);
         if(!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "";
@@ -208,6 +218,7 @@
         node.childNodes[6].contentEditable = true;
         node.childNodes[7].textContent = "100";
         node.childNodes[7].contentEditable = true;
+        add_remove_button(node);
         element.appendChild(node);
         program_handler();
     }
@@ -220,6 +231,34 @@
         document.getElementById("ContentPlaceHolder1_GridView2").appendChild(button);
     }
     safe_run(add_assignment_append_button);
+
+    // Remove class
+    let buttons = 0;
+    function add_remove_button(node) {
+        let button = create_element("button");
+        button.textContent = "-";
+        button.id = "button" + buttons;
+        button.type = "button"
+        function delete_row() {
+            node.remove();
+            program_handler();
+        }
+        button.onclick = delete_row;
+        node.appendChild(button);
+        buttons++;
+    }
+    function add_all_remove_class_buttons() {
+        let nodes = document.getElementById("ContentPlaceHolder1_GridView1").lastChild.childNodes;
+        for(let i = 1; i < nodes.length - 1; i++)
+            add_remove_button(nodes[i]);
+    }
+    function add_all_remove_assignment_buttons() {
+        let nodes = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1].childNodes;
+        for(let i = 1; i < nodes.length - 1; i++)
+            add_remove_button(nodes[i]);
+    }
+    safe_run(add_all_remove_class_buttons);
+    safe_run(add_all_remove_assignment_buttons);
 
     // Program DOM element
     let dom_element;
