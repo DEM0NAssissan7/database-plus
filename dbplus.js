@@ -21,7 +21,7 @@
     'use strict';
 
     // Options
-    const apply_theming = false;
+    const apply_theming = true;
 
     // General function
     function get_path(path) {
