@@ -34,6 +34,9 @@
     function get_elements(name) {
         return document.getElementsByClassName(name)
     }
+    function element_by_id(id){
+        return document.getElementById(id);
+    }
     function create_element(tag_name) {
         return document.createElement(tag_name);
     }
@@ -134,6 +137,75 @@
         return get_student_grade() / 25;
     }
 
+    // Assignment groups
+    let assignment_groups = [];
+    function add_assignment_group(name, percentage) {
+        for(let group of assignment_groups) {
+            if(group.name === name){
+                group.percentage += percentage;
+                group.count++;
+                return;
+            }
+        }
+        assignment_groups.push({
+            name: name,
+            percentage: percentage,
+            assignment_percent: percentage,
+            count: 1
+        });
+    }
+    function probe_assignment_groups() {
+        let element;
+        for(let i = 0;;i++) {
+            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
+            if (element === null) break;
+            let nodes = element.childNodes;
+            add_assignment_group(nodes[3].innerText, get_num(nodes[6].innerText));
+        }
+        for(let group of assignment_groups)
+            group.percentage = Math.round(group.percentage);
+    }
+    function get_assignment_group(name) {
+        for(let group of assignment_groups)
+            if(group.name === name) return group;
+        return null;
+    }
+    function update_percentages() {
+        let element;
+        for(let i = 0;;i++) {
+            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
+            if (element === null) break;
+            let nodes = element.childNodes;
+            let group = get_assignment_group(nodes[3].textContent);
+            if(!group)
+                group = get_assignment_group(nodes[3].firstChild.selectedOptions[0].innerText);
+            nodes[6].textContent = round(group.percentage / group.count) + " %";
+        }
+    }
+    function add_assignment_group_button(node) {
+        let nodes = node.childNodes;
+        let select = create_element("select");
+        select.for = "Category";
+        for(let group of assignment_groups) {
+            let option = create_element("option");
+            option.textContent = group.name;
+            option.value = group.percentage;
+            select.appendChild(option)
+        }
+        let group = {count: 0};
+        function change_percentage() {
+            group.count--;
+            group = get_assignment_group(select.selectedOptions[0].innerText);
+            nodes[6].textContent = select.value;
+            group.count++;
+            update_percentages();
+        }
+        setTimeout(change_percentage,100);
+        select.onchange = change_percentage;
+        nodes[3].appendChild(select);
+    }
+    safe_run(probe_assignment_groups);
+
     // Class grades
     function get_class_grade() {
         let result = 0;
@@ -168,12 +240,12 @@
     let clone;
     let clones = 0;
     safe_run(() => {
-        let element = document.getElementById("ContentPlaceHolder1_GridView1").lastChild;
+        let element = element_by_id("ContentPlaceHolder1_GridView1").lastChild;
         clone = element.childNodes[2].cloneNode(true);
     });
     function append_class() {
         clones++;
-        let element = document.getElementById("ContentPlaceHolder1_GridView1").lastChild;
+        let element = element_by_id("ContentPlaceHolder1_GridView1").lastChild;
         let node = clone.cloneNode(true);
         if(!node) return;
         node.childNodes[1].textContent = "";
@@ -199,26 +271,26 @@
 
     // Append assignment
     safe_run(() => {
-        let element = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1];
+        let element = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
         clone = element.childNodes[2].cloneNode(true);
     });
     function append_assignment() {
         clones++;
-        let element = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1];
+        let element = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
         let node = clone.cloneNode(true);
         if(!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "";
-        node.childNodes[3].textContent = "Assignment";
+        node.childNodes[3].textContent = "";
         node.childNodes[4].textContent = "Assignment " + clones;
         node.childNodes[4].contentEditable = true;
         node.childNodes[5].textContent = "0";
         node.childNodes[5].contentEditable = true;
-        node.childNodes[6].textContent = "5.00 %";
-        node.childNodes[6].contentEditable = true;
+        node.childNodes[6].textContent = "0.00 %";
         node.childNodes[7].textContent = "100";
         node.childNodes[7].contentEditable = true;
         add_remove_button(node);
+        add_assignment_group_button(node);
         element.appendChild(node);
         program_handler();
     }
@@ -228,7 +300,7 @@
         button.id = "button";
         button.type = "button"
         button.onclick = append_assignment;
-        document.getElementById("ContentPlaceHolder1_GridView2").appendChild(button);
+        element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
     }
     safe_run(add_assignment_append_button);
 
@@ -248,12 +320,12 @@
         buttons++;
     }
     function add_all_remove_class_buttons() {
-        let nodes = document.getElementById("ContentPlaceHolder1_GridView1").lastChild.childNodes;
+        let nodes = element_by_id("ContentPlaceHolder1_GridView1").lastChild.childNodes;
         for(let i = 1; i < nodes.length - 1; i++)
             add_remove_button(nodes[i]);
     }
     function add_all_remove_assignment_buttons() {
-        let nodes = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1].childNodes;
+        let nodes = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1].childNodes;
         for(let i = 1; i < nodes.length - 1; i++)
             add_remove_button(nodes[i]);
     }
