@@ -43,8 +43,23 @@
         test(101, "A++");
         return result;
     }
-
-
+    function get_gpa_point(letter) {
+        let result = 0;
+        function test(value, _letter) {
+            if(letter === _letter) result = value;
+        }
+        test(0, "F");
+        test(1, "D");
+        test(1, "D+");
+        test(2, "C");
+        test(2, "C+");
+        test(3, "B");
+        test(3, "B+");
+        test(4, "A");
+        test(4, "A+");
+        test(4, "A++");
+        return result;
+    }
 
     // Page type
     function get_page_type() {
@@ -82,10 +97,8 @@
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
-            element.childNodes[6].contentEditable=true; // Set to editable
-            let grade = parseFloat(element.childNodes[6].innerText);
+            let grade = get_gpa_point(element.childNodes[5].innerText);
             result += grade;
-            element.childNodes[5].textContent = get_letter_grade(grade);
             i++;
         }
         result = result / i;
@@ -180,13 +193,14 @@
     function program_handler() {
         let page_type = get_page_type();
 
-        let grade, gpa;
+        let grade, gpa, real_gpa;
         switch(page_type) {
             case "student":
                 student_theme();
                 gpa = round(get_gpa());
+                real_gpa = round(get_real_gpa());
                 grade = round(get_student_grade(), 1);
-                change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " (" + grade + "%)");
+                change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
                 break;
             case "class":
                 class_theme();
