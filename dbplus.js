@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Database Plus
+// @name         Database+
 // @namespace    http://tampermonkey.net/
 // @version      1.0
-// @description  A nice upgrade to the peace database
+// @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
 // @icon         https://static.toiimg.com/thumb/msid-51767839,imgsize-17046,width-400,resizemode-4/51767839.jpg
@@ -45,10 +45,13 @@
 
     // Page type
     function get_page_type() {
+
         if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)"))
             return "student"
         if(get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(2)"))
             return "class"
+        if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)"))
+            return "menu"
         return "none"
     }
 
@@ -70,6 +73,23 @@
         return result;
     }
     function get_gpa() {
+        let result = 0;
+        let element;
+        let i = 0;
+        while (true) {
+            element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
+            if(element === null) break;
+            element.childNodes[6].contentEditable=true; // Set to editable
+            let grade = parseFloat(element.childNodes[6].innerText);
+            result += grade;
+            element.childNodes[5].textContent = get_letter_grade(grade);
+            i++;
+        }
+        result = result / i;
+        return result;
+        
+    }
+    function get_real_gpa() {
         return get_student_grade() / 25;
     }
 
@@ -102,7 +122,7 @@
     function add_dom_element() {
         dom_element = document.createElement("div");
         dom_element.id = "dbp";
-        const text = document.createTextNode("Database Plus");
+        const text = document.createTextNode("Database+");
         dom_element.appendChild(text);
         document.body.appendChild(dom_element);
 
@@ -122,6 +142,22 @@
         // Get rid of useless elements
         get_elements("middle")[0].remove();
         get_elements("footer")[0].remove();
+        // Recolor header
+        get_elements("header")[0].style.background = "black";
+        // Rename header
+        get_elements("header")[0].textContent = "Database+"
+        get_elements("header")[0].borderRadius = "10px"
+    }
+    function student_theme() {
+        let element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)");
+        element.style.background = "black";
+        element.style.color = "white";
+    }
+    function class_theme() {
+        let element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(1)");
+        element.style.background = "rgba(0,0,0,0.8)";
+        element.style.backdropFilter = "blur(2px)"
+        element.style.color = "white";
     }
     apply_styling();
 
@@ -132,13 +168,18 @@
         let grade, gpa;
         switch(page_type) {
             case "student":
+                student_theme();
                 gpa = round(get_gpa());
                 grade = round(get_student_grade(), 1);
                 change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " (" + grade + "%)");
                 break;
             case "class":
+                class_theme();
                 grade = round(get_class_grade(), 1);
                 change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
+                break;
+            case "menu":
+                student_theme();
                 break;
         }
     }
