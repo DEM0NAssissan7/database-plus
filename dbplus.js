@@ -9,6 +9,14 @@
 // @grant        none
 // ==/UserScript==
 
+/* TODO:
+
+- Sort by most hurtful grades/classes
+- Be able to add assignments/classes
+- Identify each assignment type and its grade
+
+*/
+
 (function() {
     'use strict';
 
