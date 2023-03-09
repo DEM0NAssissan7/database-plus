@@ -315,8 +315,10 @@
         button.id = "button" + buttons;
         button.type = "button"
         function delete_row() {
-            get_assignment_group(node).count--;
-            update_percentages();
+            safe_run(() => {
+                get_assignment_group(node).count--;
+                update_percentages();
+            });
             node.remove();
             program_handler();
         }
