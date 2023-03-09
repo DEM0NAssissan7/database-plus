@@ -199,7 +199,7 @@
         if(!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "";
-        node.childNodes[3].textContent = "Clone";
+        node.childNodes[3].textContent = "Assignment";
         node.childNodes[4].textContent = "Assignment " + clones;
         node.childNodes[4].contentEditable = true;
         node.childNodes[5].textContent = "0";
