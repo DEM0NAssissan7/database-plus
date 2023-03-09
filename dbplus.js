@@ -197,9 +197,9 @@
         node.childNodes[4].contentEditable = true;
         node.childNodes[5].textContent = "0";
         node.childNodes[5].contentEditable = true;
-        node.childNodes[6].textContent = "0.00 %";
+        node.childNodes[6].textContent = "5.00 %";
         node.childNodes[6].contentEditable = true;
-        node.childNodes[7].textContent = "0";
+        node.childNodes[7].textContent = "100";
         node.childNodes[7].contentEditable = true;
         element.appendChild(node);
         program_handler();
@@ -210,7 +210,7 @@
         button.id = "button";
         button.type = "button"
         button.onclick = append_assignment;
-        get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(2) > td").appendChild(button);
+        document.getElementById("ContentPlaceHolder1_GridView2").appendChild(button);
     }
     safe_run(add_assignment_append_button);
 
