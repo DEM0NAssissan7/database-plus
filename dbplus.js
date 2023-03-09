@@ -147,13 +147,72 @@
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
 
-            result += numerator / denominator * weight;
-            weight_sum += weight;
+            if(denominator){
+                result += numerator / denominator * weight;
+                weight_sum += weight;
+            }
             i++
         }
         result = result / weight_sum;
         return result * 100;
     }
+
+    // Append class
+    let clones = 0;
+    function append_class() {
+        clones++;
+        let element = document.getElementById("ContentPlaceHolder1_GridView1").lastChild;
+        let node = element.childNodes[2].cloneNode(true);
+        if(!node) return;
+        node.childNodes[1].textContent = "";
+        node.childNodes[2].textContent = "Class " + clones;
+        node.childNodes[2].contentEditable = true;
+        node.childNodes[3].textContent = "Nobody";
+        node.childNodes[3].contentEditable = true;
+        node.childNodes[5].textContent = "F";
+        node.childNodes[6].textContent = "0.00";
+        element.appendChild(node);
+        program_handler();
+    }
+    function add_class_append_button() {
+        let button = create_element("button");
+        button.textContent = "Add Class";
+        button.id = "button";
+        button.type="button"
+        button.onclick = append_class;
+        get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(3) > td > div").appendChild(button);
+    }
+    safe_run(add_class_append_button)
+
+    // Append assignment
+    function append_assignment() {
+        clones++;
+        let element = document.getElementById("ContentPlaceHolder1_GridView2").childNodes[1];
+        let node = element.childNodes[2].cloneNode(true);
+        if(!node) return;
+        node.childNodes[1].textContent = "";
+        node.childNodes[2].textContent = "";
+        node.childNodes[3].textContent = "Clone";
+        node.childNodes[4].textContent = "Assignment " + clones;
+        node.childNodes[4].contentEditable = true;
+        node.childNodes[5].textContent = "0";
+        node.childNodes[5].contentEditable = true;
+        node.childNodes[6].textContent = "0.00 %";
+        node.childNodes[6].contentEditable = true;
+        node.childNodes[7].textContent = "0";
+        node.childNodes[7].contentEditable = true;
+        element.appendChild(node);
+        program_handler();
+    }
+    function add_assignment_append_button() {
+        let button = create_element("button");
+        button.textContent = "Add Assignment";
+        button.id = "button";
+        button.type = "button"
+        button.onclick = append_assignment;
+        get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(2) > td").appendChild(button);
+    }
+    safe_run(add_assignment_append_button);
 
     // Program DOM element
     let dom_element;
