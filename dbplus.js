@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Database+
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
