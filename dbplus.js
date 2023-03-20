@@ -204,7 +204,7 @@
             group.count++;
             update_percentages();
         }
-        setTimeout(change_percentage,100);
+        setTimeout(change_percentage, 10);
         select.onchange = change_percentage;
         nodes[3].appendChild(select);
     }
