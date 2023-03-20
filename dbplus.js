@@ -177,11 +177,12 @@
         return null;
     }
     function update_percentages() {
-        let element;
+        let element, group;
         for(let i = 0;;i++) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if (element === null) break;
-            let group = get_assignment_group(element);
+            group = get_assignment_group(element);
+            if(group.count < 1) group.count = 1;
             element.childNodes[6].textContent = round(group.percentage / group.count) + " %";
         }
     }
