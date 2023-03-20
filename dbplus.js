@@ -297,7 +297,7 @@
         add_remove_button(node);
         add_assignment_group_button(node);
         element.appendChild(node);
-        setTimeout(program_handler, 50);
+        program_handler();
     }
     function add_assignment_append_button() {
         let button = create_element("button");
