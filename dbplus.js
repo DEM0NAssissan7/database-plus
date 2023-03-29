@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Database+
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
@@ -242,9 +242,10 @@
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
 
-            let dropped_checkbox = nodes[9].childNodes[0].childNodes[0];
-            dropped_checkbox.disabled = null;
-            let dropped = dropped_checkbox.checked;
+            let drop_checkbox = nodes[9].childNodes[0].childNodes[0];
+            drop_checkbox.autocomplete = "off";
+            drop_checkbox.disabled = null;
+            let dropped = drop_checkbox.checked;
 
             let group = get_assignment_group(element);
             
@@ -326,6 +327,8 @@
         button.id = "button";
         button.type = "button"
         button.onclick = append_assignment;
+        button.style.padding = "10px";
+        button.style.width = "max-content"
         element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
     }
     safe_run(add_assignment_append_button);
@@ -363,7 +366,7 @@
     safe_run(add_all_remove_assignment_buttons);
 
     // Program DOM element
-    let dom_element;
+    let dom_element, sub_element;
     function add_dom_elements() {
         dom_element = create_element("p");
         dom_element.id = "dbp";
@@ -371,12 +374,22 @@
         dom_element.appendChild(text);
         document.body.appendChild(dom_element);
 
+        sub_element = create_element("div");
+        sub_element.id = "dbps";
+        const subtitle = document.createTextNode("");
+        sub_element.appendChild(subtitle);
+        document.body.appendChild(sub_element);
+
         // Change style
         dom_element.style.fontSize = "48px";
-        dom_element.style.whiteSpace = "pre-line"
+        sub_element.style.fontSize = "24px";
+        sub_element.style.whiteSpace = "pre-line"
     }
     function change_dom_text(text) {
         dom_element.childNodes[0].textContent = text;
+    }
+    function change_sub_text(text) {
+        sub_element.childNodes[0].textContent = text;
     }
     add_dom_elements();
 
@@ -425,6 +438,17 @@
     }
     if(apply_theming) apply_styling();
 
+    // Refreshing
+    function add_reset_button () {
+        let button = document.createElement("button");
+        button.onclick = () => {window.location.reload(true)};
+        button.textContent = "Reset";
+        button.style.alignSelf = "center"
+        button.style.transform = "translateX(1000%)"
+        element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
+    }
+    safe_run(add_reset_button);
+
     // Main program handler
     function program_handler() {
         let page_type = get_page_type();
@@ -443,7 +467,8 @@
                 update_percentages();
                 grade = round(get_class_grade(), 1);
                 update_group_summary();
-                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%\n" + group_summary);
+                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
+                change_sub_text(group_summary);
                 break;
             case "menu":
                 if(apply_theming) student_theme();
