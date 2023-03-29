@@ -30,12 +30,31 @@
         we can just reference it from a table of already cached elements. That way,
         we don't keep asking for the same path over and over again.
     */
-   let path_table = [];
+   let path_cache = [];
     function get_path(path) {
-        return document.querySelector(path);
+        // Check if a path has already been referenced.
+        for(let i = 0; i < path_cache.length; i++)
+            if(path_cache[i].name === path)
+                return path_cache[i].reference;
+        let query = document.querySelector(path);
+        path_cache.push({
+            name: path,
+            reference: query
+        });
+        return query;
     }
+    let elements_cache = [];
     function get_elements(name) {
-        return document.getElementsByClassName(name)
+        // Check if a name has already been referenced.
+        for(let i = 0; i < elements_cache.length; i++)
+            if(elements_cache[i].name === name)
+                return elements_cache[i].reference;
+        let elements = document.getElementsByClassName(name);
+        elements_cache.push({
+            name: name,
+            reference: elements
+        });
+        return elements;
     }
     // General function
     function round(number, accuracy) {
