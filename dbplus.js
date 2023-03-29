@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Database+
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
@@ -151,6 +151,8 @@
             name: name,
             percentage: percentage,
             assignment_percent: percentage,
+            average: 0,
+            sum: 0,
             count: 1
         });
     }
@@ -208,6 +210,15 @@
         select.onchange = change_percentage;
         nodes[3].appendChild(select);
     }
+    let group_summary = "";
+    function update_group_summary() {
+        group_summary = "";
+        for(let group of assignment_groups) {
+            group_summary += group.name + ": " + group.percentage + "% (" + round(group.average / group.sum * 100) + "%)\n";
+            group.average = 0;
+            group.sum = 0;
+        }
+    }
     safe_run(probe_assignment_groups);
     safe_run(update_percentages);
 
@@ -230,10 +241,17 @@
             if(!numerator) numerator = 0;
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
+            let dropped = nodes[9].childNodes[0].childNodes[0].checked;
 
-            if(denominator){
+            let group = get_assignment_group(element);
+            
+            if(denominator && !dropped){
                 result += numerator / denominator * weight;
                 weight_sum += weight;
+
+                // Group average
+                group.average += numerator / denominator * weight;
+                group.sum += weight;
             }
             i++
         }
@@ -343,8 +361,8 @@
 
     // Program DOM element
     let dom_element;
-    function add_dom_element() {
-        dom_element = create_element("div");
+    function add_dom_elements() {
+        dom_element = create_element("p");
         dom_element.id = "dbp";
         const text = document.createTextNode("Database+");
         dom_element.appendChild(text);
@@ -352,11 +370,12 @@
 
         // Change style
         dom_element.style.fontSize = "48px";
+        dom_element.style.whiteSpace = "pre-line"
     }
     function change_dom_text(text) {
         dom_element.childNodes[0].textContent = text;
     }
-    add_dom_element();
+    add_dom_elements();
 
     // Styling
     function apply_styling() {
@@ -420,7 +439,8 @@
                 if(apply_theming) class_theme();
                 update_percentages();
                 grade = round(get_class_grade(), 1);
-                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
+                update_group_summary();
+                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%\n" + group_summary);
                 break;
             case "menu":
                 if(apply_theming) student_theme();
