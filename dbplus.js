@@ -43,20 +43,10 @@
         });
         return query;
     }
-    let elements_cache = [];
-    function get_elements(name) {
-        // Check if a name has already been referenced.
-        for(let i = 0; i < elements_cache.length; i++)
-            if(elements_cache[i].name === name)
-                return elements_cache[i].reference;
-        let elements = document.getElementsByClassName(name);
-        elements_cache.push({
-            name: name,
-            reference: elements
-        });
-        return elements;
-    }
     // General function
+    function get_elements(name) {
+        return document.getElementsByClassName(name);
+    }
     function round(number, accuracy) {
         if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
