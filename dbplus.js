@@ -241,7 +241,10 @@
             if(!numerator) numerator = 0;
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
-            let dropped = nodes[9].childNodes[0].childNodes[0].checked;
+
+            let dropped_checkbox = nodes[9].childNodes[0].childNodes[0];
+            dropped_checkbox.disabled = null;
+            let dropped = dropped_checkbox.checked;
 
             let group = get_assignment_group(element);
             
