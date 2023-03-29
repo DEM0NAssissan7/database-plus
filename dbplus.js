@@ -23,16 +23,24 @@
     // Options
     const apply_theming = true;
 
-    // General function
+    /* -- Get path / elements
+
+        We use a special caching algorithm in order to significantly reduce CPU usage.
+        If a certain path/element has already been called, instead of using HTML to find it,
+        we can just reference it from a table of already cached elements. That way,
+        we don't keep asking for the same path over and over again.
+    */
+   let path_table = [];
     function get_path(path) {
         return document.querySelector(path);
     }
+    function get_elements(name) {
+        return document.getElementsByClassName(name)
+    }
+    // General function
     function round(number, accuracy) {
         if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
-    }
-    function get_elements(name) {
-        return document.getElementsByClassName(name)
     }
     function element_by_id(id){
         return document.getElementById(id);
