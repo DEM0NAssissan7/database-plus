@@ -370,11 +370,12 @@ I consider this program stable now.
     safe_run(add_all_remove_assignment_buttons);
 
     // Sort assignments
-    function sort_assignments(algorithm) {
+    let sorting_algorithm = "offensive";
+    function sort_assignments() {
         let element_cache = [];
         let element;
         let i = 0;
-        let average_grade = get_class_grade() / 100;
+        let class_grade = get_class_grade() / 100;
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
@@ -386,29 +387,47 @@ I consider this program stable now.
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
 
-            element_cache.push([element, weight / denominator, (average_grade - numerator / denominator) * weight, numerator / denominator * weight]);
+            let assignment_grade = numerator / denominator;
+
+            element_cache.push([element,
+                                weight / denominator,
+                                (class_grade - assignment_grade) * weight,
+                                Math.abs(class_grade - assignment_grade),
+                                weight]);
             element.remove();
         }
-        // Sort elements by most influencial per point
-        switch (algorithm) {
-            case "influence":
+        // Sort elements by a certain algorithm
+        switch (sorting_algorithm) {
+            case "influence": // Most influencial per point
                 element_cache = element_cache.sort((a, b) => b[1] - a[1]);
                 break;
-            case "offensive":
+            case "offensive": // Most hurful grade to score
                 element_cache = element_cache.sort((a, b) => b[2] - a[2]);
                 break;
-            case "outliars":
-                element_cache = element_cache.sort((a, b) => Math.abs(b[2]) - Math.abs(a[2]));
+            case "outliars": // Most deviant from average
+                element_cache = element_cache.sort((a, b) => b[3] - a[3]);
                 break;
-            case "worst":
-                element_cache = element_cache.sort((a, b) => a[3] - b[3]);
+            case "type": // Sort by group
+                element_cache = element_cache.sort((a, b) => b[4] - a[4]);
                 break;
         }
         let container = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
         for(element of element_cache)
             container.appendChild(element[0]);
     }
-    setTimeout(() => {safe_run(() => {sort_assignments("worst")})}, 100);
+    function add_sort_button() {
+        let button = document.createElement("button");
+        button.onclick = sort_assignments;
+        button.textContent = "Sort";
+        button.type="button";
+        button.style.padding = "5px";
+        element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
+    }
+    function add_sort_selection() {
+
+    }
+    safe_run(add_sort_button);
+    setTimeout(() => {safe_run(sort_assignments)}, 100);
 
     // Program DOM element
     let dom_element, sub_element;
