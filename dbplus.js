@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Database+
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
@@ -11,9 +11,11 @@
 
 /* TODO:
 
-- Sort by most hurtful grades/classes
-- Be able to add assignments/classes
-- Identify each assignment type and its grade
+X- Sort by most influencial grades/classes
+X- Be able to add assignments/classes
+X- Identify each assignment type and its grade
+
+I consider this program stable now.
 
 */
 
@@ -364,6 +366,44 @@
     }
     safe_run(add_all_remove_class_buttons);
     safe_run(add_all_remove_assignment_buttons);
+
+    // Sort assignments
+    function sort_assignments(algorithm) {
+        let element_cache = [];
+        let element;
+        let i = 0;
+        let average_grade = get_class_grade();
+        while (true) {
+            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
+            if(element === null) break;
+            let nodes = element.childNodes;
+
+            let numerator = get_num(nodes[5].innerText);
+            if(!numerator) numerator = 0;
+
+            let denominator = get_num(nodes[7].innerText);
+            let weight = get_num(nodes[6].innerText);
+
+            element_cache.push([element, weight / denominator, (average_grade - numerator / denominator) * weight]);
+            element.remove();
+        }
+        // Sort elements by most influencial per point
+        switch (algorithm) {
+            case "influence":
+                element_cache = element_cache.sort((a, b) => b[1] - a[1]);
+                break;
+            case "offensive":
+                element_cache = element_cache.sort((a, b) => b[2] - a[2]);
+                break;
+            case "outliars":
+                element_cache = element_cache.sort((a, b) => Math.abs(b[2]) - Math.abs(a[2]));
+                break;
+        }
+        let container = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
+        for(element of element_cache)
+            container.appendChild(element[0]);
+    }
+    setTimeout(() => {safe_run(() => {sort_assignments("offensive")}, 100)});
 
     // Program DOM element
     let dom_element, sub_element;
