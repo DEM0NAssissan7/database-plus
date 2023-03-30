@@ -403,7 +403,7 @@ I consider this program stable now.
         for(element of element_cache)
             container.appendChild(element[0]);
     }
-    setTimeout(() => {safe_run(() => {sort_assignments("offensive")}, 100)});
+    setTimeout(() => {safe_run(() => {sort_assignments("offensive")})}, 100);
 
     // Program DOM element
     let dom_element, sub_element;
