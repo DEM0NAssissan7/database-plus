@@ -294,7 +294,7 @@ I consider this program stable now.
         let button = create_element("button");
         button.textContent = "Add Class";
         button.id = "button";
-        button.type="button"
+        button.type = "button";
         button.onclick = append_class;
         get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(3) > td > div").appendChild(button);
     }
