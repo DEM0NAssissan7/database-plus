@@ -372,7 +372,7 @@ I consider this program stable now.
         let element_cache = [];
         let element;
         let i = 0;
-        let average_grade = get_class_grade();
+        let average_grade = get_class_grade() / 100;
         while (true) {
             element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
             if(element === null) break;
