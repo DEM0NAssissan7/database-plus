@@ -427,7 +427,6 @@ I consider this program stable now.
 
     }
     safe_run(add_sort_button);
-    setTimeout(() => {safe_run(sort_assignments)}, 100);
 
     // Program DOM element
     let dom_element, sub_element;
@@ -554,4 +553,6 @@ I consider this program stable now.
 
     // Run initial program
     program_handler();
+    // Initial sort
+    safe_run(sort_assignments);
 })();
