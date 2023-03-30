@@ -17,7 +17,7 @@
 
 */
 
-(function() {
+(function () {
     'use strict';
 
     // Options
@@ -30,28 +30,30 @@
         we can just reference it from a table of already cached elements. That way,
         we don't keep asking for the same path over and over again.
     */
-   let path_cache = [];
-    function get_path(path) {
-        // Check if a path has already been referenced.
-        for(let i = 0; i < path_cache.length; i++)
-            if(path_cache[i].name === path)
-                return path_cache[i].reference;
-        let query = document.querySelector(path);
-        path_cache.push({
-            name: path,
-            reference: query
-        });
-        return query;
+    let get_path = () => { };
+    {
+        let query_cache = [];
+        let path_cache = [];
+        get_path = function (path) {
+            // Check if a path has already been referenced.
+            for (let i = 0; i < path_cache.length; i++)
+                if (path_cache[i] === path)
+                    return query_cache[i];
+            let query = document.querySelector(path);
+            path_cache.push(path);
+            query_cache.push(query);
+            return query;
+        }
     }
     // General function
     function get_elements(name) {
         return document.getElementsByClassName(name);
     }
     function round(number, accuracy) {
-        if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
+        if (accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
     }
-    function element_by_id(id){
+    function element_by_id(id) {
         return document.getElementById(id);
     }
     function create_element(tag_name) {
@@ -60,7 +62,7 @@
     function get_letter_grade(grade) {
         let result = "F";
         function test(min_value, letter) {
-            if(grade >= min_value) result = letter;
+            if (grade >= min_value) result = letter;
         }
         test(59, "F");
         test(60, "D");
@@ -77,7 +79,7 @@
     function get_gpa_point(letter) {
         let result = 0;
         function test(value, _letter) {
-            if(letter === _letter) result = value;
+            if (letter === _letter) result = value;
         }
         test(0, "F");
         test(1, "D");
@@ -94,39 +96,41 @@
     function safe_run(handler) {
         try {
             handler();
-        } catch (e) {}
+        } catch (e) { }
     }
     function get_num(string) {
         let parse_float = parseFloat(string);
-        if(parse_float) return parse_float;
+        if (parse_float) return parse_float;
         return 0;
     }
 
     // Page type
     function get_page_type() {
 
-        if(get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)"))
+        if (get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)"))
             return "menu"
-        if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)"))
+        if (get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)"))
             return "student"
-        if(get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(2)"))
+        if (get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(2)"))
             return "class"
         return "none"
     }
 
     // Student grades
+    let grade_cache = 0;
     function get_student_grade() {
         let result = 0;
         let element;
         let i = 0;
-        while (true) {
-            element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if(!element) break;
-            if(apply_theming) {
+        let tbody = get_path("#ContentPlaceHolder1_GridView1 > tbody");
+        while (i < tbody.childNodes.length - 2) {
+            element = tbody.childNodes[i + 1];
+            if (!element) break;
+            if (apply_theming) {
                 element.style.color = "black"
-                element.childNodes[6].style.color="#555555"
+                element.childNodes[6].style.color = "#555555"
             }
-            element.childNodes[6].contentEditable=true; // Set to editable
+            element.childNodes[6].contentEditable = true; // Set to editable
             let grade = get_num(element.childNodes[6].innerText);
             result += grade;
             element.childNodes[5].textContent = get_letter_grade(grade);
@@ -139,26 +143,26 @@
         let result = 0;
         let element;
         let i = 0;
-        while (true) {
-            element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if(element === null) break;
+        let tbody = get_path("#ContentPlaceHolder1_GridView1 > tbody");
+        while (i < tbody.childNodes.length - 2) {
+            element = tbody.childNodes[(i + 1)];
             let grade = get_gpa_point(element.childNodes[5].innerText);
             result += grade;
             i++;
         }
         result = result / i;
         return result;
-        
+
     }
     function get_real_gpa() {
-        return get_student_grade() / 25;
+        return grade_cache / 25;
     }
 
     // Assignment groups
     let assignment_groups = [];
     function add_assignment_group(name, percentage) {
-        for(let group of assignment_groups) {
-            if(group.name === name){
+        for (let group of assignment_groups) {
+            if (group.name === name) {
                 group.percentage += percentage;
                 group.count++;
                 return;
@@ -175,33 +179,33 @@
     }
     function probe_assignment_groups() {
         let element;
-        for(let i = 0;;i++) {
-            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if (element === null) break;
+        let tbody = get_path("#ContentPlaceHolder1_GridView2 > tbody");
+        for (let i = 0; i < tbody.childNodes.length - 2; i++) {
+            element = tbody.childNodes[i + 1];
             let nodes = element.childNodes;
             add_assignment_group(nodes[3].innerText, get_num(nodes[6].innerText));
         }
-        for(let group of assignment_groups)
+        for (let group of assignment_groups)
             group.percentage = Math.round(group.percentage);
     }
     function get_assignment_group(node) {
 
         let name = node.childNodes[3].innerText;
-        for(let group of assignment_groups)
-            if(group.name === name) return group;
+        for (let group of assignment_groups)
+            if (group.name === name) return group;
         // If the node is a drop-down
         name = node.childNodes[3].firstChild.selectedOptions[0].innerText;
-        for(let group of assignment_groups)
-            if(group.name === name) return group;
+        for (let group of assignment_groups)
+            if (group.name === name) return group;
         return null;
     }
     function update_percentages() {
         let element, group;
-        for(let i = 0;;i++) {
-            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if (element === null) break;
+        let tbody = get_path("#ContentPlaceHolder1_GridView2 > tbody");
+        for (let i = 0; i < tbody.childNodes.length - 2; i++) {
+            element = tbody.childNodes[i + 1];
             group = get_assignment_group(element);
-            if(group.count < 1) group.count = 1;
+            if (group.count < 1) group.count = 1;
             element.childNodes[6].textContent = round(group.percentage / group.count) + " %";
         }
     }
@@ -209,13 +213,13 @@
         let nodes = node.childNodes;
         let select = create_element("select");
         select.for = "Category";
-        for(let group of assignment_groups) {
+        for (let group of assignment_groups) {
             let option = create_element("option");
             option.textContent = group.name;
             option.value = group.percentage;
             select.appendChild(option)
         }
-        let group = {count: 0};
+        let group = { count: 0 };
         function change_percentage() {
             group.count--;
             group = get_assignment_group(node);
@@ -230,8 +234,8 @@
     let group_summary = "";
     function update_group_summary() {
         group_summary = "";
-        for(let group of assignment_groups) {
-            group_summary += group.name + ": " + group.percentage + "% (" + round(group.average / group.sum * 100) + "%)\n";
+        for (let group of assignment_groups) {
+            group_summary += group.percentage + "% " + group.name + " (" + round(group.average / group.sum * 100) + "%)\n";
             group.average = 0;
             group.sum = 0;
         }
@@ -244,18 +248,17 @@
         let result = 0;
         let weight_sum = 0;
         let element;
-        let i = 0;
-        while (true) {
-            element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ (i + 2) + ")");
-            if(element === null) break;
+        let tbody = get_path("#ContentPlaceHolder1_GridView2 > tbody");
+        for (let i = 0; i < tbody.childNodes.length - 2; i++) {
+            element = tbody.childNodes[i + 1];
             let nodes = element.childNodes;
             let numerator = get_num(nodes[5].innerText);
-            nodes[5].contentEditable=true; // Set to editable
-            if(apply_theming) {
+            nodes[5].contentEditable = true; // Set to editable
+            if (apply_theming) {
                 nodes[5].style.color = "#555555";
                 element.style.color = "black"
             }
-            if(!numerator) numerator = 0;
+            if (!numerator) numerator = 0;
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
 
@@ -265,8 +268,8 @@
             let dropped = drop_checkbox.checked;
 
             let group = get_assignment_group(element);
-            
-            if(denominator && !dropped){
+
+            if (denominator && !dropped) {
                 result += numerator / denominator * weight;
                 weight_sum += weight;
 
@@ -274,7 +277,6 @@
                 group.average += numerator / denominator * weight;
                 group.sum += weight;
             }
-            i++
         }
         result = result / weight_sum;
         return result * 100;
@@ -284,14 +286,19 @@
     let clone;
     let clones = 0;
     safe_run(() => {
-        let element = element_by_id("ContentPlaceHolder1_GridView1").lastChild;
-        clone = element.childNodes[2].cloneNode(true);
+        setTimeout(() => {
+            let element = element_by_id("ContentPlaceHolder1_GridView1").lastChild;
+            if (element.childNodes.length > 2)
+                clone = element.childNodes[2].cloneNode(true);
+            else
+                clone = element.childNodes[1].cloneNode(true);
+        }, 1000);
     });
     function append_class() {
         clones++;
         let element = element_by_id("ContentPlaceHolder1_GridView1").lastChild;
         let node = clone.cloneNode(true);
-        if(!node) return;
+        if (!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "Class " + clones;
         node.childNodes[2].contentEditable = true;
@@ -307,7 +314,7 @@
         let button = create_element("button");
         button.textContent = "Add Class";
         button.id = "button";
-        button.type="button"
+        button.type = "button"
         button.onclick = append_class;
         get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(3) > td > div").appendChild(button);
     }
@@ -322,7 +329,7 @@
         clones++;
         let element = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
         let node = clone.cloneNode(true);
-        if(!node) return;
+        if (!node) return;
         node.childNodes[1].textContent = "";
         node.childNodes[2].textContent = "";
         node.childNodes[3].textContent = "";
@@ -371,12 +378,12 @@
     }
     function add_all_remove_class_buttons() {
         let nodes = element_by_id("ContentPlaceHolder1_GridView1").lastChild.childNodes;
-        for(let i = 1; i < nodes.length - 1; i++)
+        for (let i = 1; i < nodes.length - 1; i++)
             add_remove_button(nodes[i]);
     }
     function add_all_remove_assignment_buttons() {
         let nodes = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1].childNodes;
-        for(let i = 1; i < nodes.length - 1; i++)
+        for (let i = 1; i < nodes.length - 1; i++)
             add_remove_button(nodes[i]);
     }
     safe_run(add_all_remove_class_buttons);
@@ -399,7 +406,7 @@
 
         // Change style
         dom_element.style.fontSize = "48px";
-        sub_element.style.fontSize = "24px";
+        sub_element.style.fontSize = "20px";
         sub_element.style.whiteSpace = "pre-line"
     }
     function change_dom_text(text) {
@@ -438,10 +445,10 @@
         // Set site background
         document.body.style.background = "white"
         // Remove border around inner part
-        safe_run(() => {get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(2) > td").style.borderWidth = "0px";})
+        safe_run(() => { get_path("#form2 > div:nth-child(3) > table > tbody > tr:nth-child(2) > td").style.borderWidth = "0px"; })
         // Make border around window bigger
-        safe_run(() => {get_path("#form2 > div:nth-child(3) > table").style.borderWidth = "3px";})
-        safe_run(() => {get_path("#form2 > div:nth-child(3) > table").style.borderCollapse = "collapse";})
+        safe_run(() => { get_path("#form2 > div:nth-child(3) > table").style.borderWidth = "3px"; })
+        safe_run(() => { get_path("#form2 > div:nth-child(3) > table").style.borderCollapse = "collapse"; })
     }
     function student_theme() {
         let element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(1)");
@@ -453,12 +460,12 @@
         element.style.background = "black";
         element.style.color = "white";
     }
-    if(apply_theming) apply_styling();
+    if (apply_theming) apply_styling();
 
     // Refreshing
-    function add_reset_button () {
+    function add_reset_button() {
         let button = document.createElement("button");
-        button.onclick = () => {window.location.reload(true)};
+        button.onclick = () => { window.location.reload(true) };
         button.textContent = "Reset";
         button.style.alignSelf = "center"
         button.style.transform = "translateX(1000%)"
@@ -471,16 +478,17 @@
         let page_type = get_page_type();
 
         let grade, gpa, real_gpa;
-        switch(page_type) {
+        switch (page_type) {
             case "student":
-                if(apply_theming) student_theme();
-                grade = round(get_student_grade(), 1);
+                if (apply_theming) student_theme();
+                grade_cache = get_student_grade();
+                grade = round(grade_cache, 1);
                 gpa = round(get_gpa());
                 real_gpa = round(get_real_gpa());
                 change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
                 break;
             case "class":
-                if(apply_theming) class_theme();
+                if (apply_theming) class_theme();
                 update_percentages();
                 grade = round(get_class_grade(), 1);
                 update_group_summary();
@@ -488,14 +496,14 @@
                 change_sub_text(group_summary);
                 break;
             case "menu":
-                if(apply_theming) student_theme();
+                if (apply_theming) student_theme();
                 break;
         }
     }
 
     // Add event listener to recalculate grades when a key gets pressed down
-    document.addEventListener('keydown', () => {setTimeout(program_handler, 50)});
-    document.addEventListener('mouseup', () => {setTimeout(program_handler, 50)});
+    document.addEventListener('keydown', () => { setTimeout(program_handler, 50) });
+    document.addEventListener('mouseup', () => { setTimeout(program_handler, 50) });
 
     // Run initial program
     program_handler();
