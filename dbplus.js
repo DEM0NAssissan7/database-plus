@@ -450,29 +450,37 @@
     safe_run(add_reset_button);
 
     // Main program handler
+    let handler_lock = false;
     function program_handler() {
-        let page_type = get_page_type();
+        if(!handler_lock) {
+            let time = performance.now();
+            let page_type = get_page_type();
 
-        let grade, gpa, real_gpa;
-        switch(page_type) {
-            case "student":
-                if(apply_theming) student_theme();
-                grade = round(get_student_grade(), 1);
-                gpa = round(get_gpa());
-                real_gpa = round(get_real_gpa());
-                change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
-                break;
-            case "class":
-                if(apply_theming) class_theme();
-                update_percentages();
-                grade = round(get_class_grade(), 1);
-                update_group_summary();
-                change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
-                change_sub_text(group_summary);
-                break;
-            case "menu":
-                if(apply_theming) student_theme();
-                break;
+            let grade, gpa, real_gpa;
+            switch(page_type) {
+                case "student":
+                    if(apply_theming) student_theme();
+                    grade = round(get_student_grade(), 1);
+                    gpa = round(get_gpa());
+                    real_gpa = round(get_real_gpa());
+                    change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
+                    break;
+                case "class":
+                    if(apply_theming) class_theme();
+                    update_percentages();
+                    grade = round(get_class_grade(), 1);
+                    update_group_summary();
+                    change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
+                    change_sub_text(group_summary);
+                    break;
+                case "menu":
+                    if(apply_theming) student_theme();
+                    break;
+            }
+            if(performance.now() - time > 3000) {
+                handler_lock = true
+                console.warn("The program handler is too slow. Locking execution.");
+            }
         }
     }
 
