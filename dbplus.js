@@ -384,7 +384,7 @@ I consider this program stable now.
             let denominator = get_num(nodes[7].innerText);
             let weight = get_num(nodes[6].innerText);
 
-            element_cache.push([element, weight / denominator, (average_grade - numerator / denominator) * weight]);
+            element_cache.push([element, weight / denominator, (average_grade - numerator / denominator) * weight, numerator / denominator * weight]);
             element.remove();
         }
         // Sort elements by most influencial per point
@@ -398,12 +398,15 @@ I consider this program stable now.
             case "outliars":
                 element_cache = element_cache.sort((a, b) => Math.abs(b[2]) - Math.abs(a[2]));
                 break;
+            case "worst":
+                element_cache = element_cache.sort((a, b) => a[3] - b[3]);
+                break;
         }
         let container = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
         for(element of element_cache)
             container.appendChild(element[0]);
     }
-    setTimeout(() => {safe_run(() => {sort_assignments("offensive")})}, 100);
+    setTimeout(() => {safe_run(() => {sort_assignments("worst")})}, 100);
 
     // Program DOM element
     let dom_element, sub_element;
