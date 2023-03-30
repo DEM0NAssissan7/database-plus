@@ -216,7 +216,9 @@ I consider this program stable now.
     function update_group_summary() {
         group_summary = "";
         for(let group of assignment_groups) {
-            group_summary += group.name + ": " + group.percentage + "% (" + round(group.average / group.sum * 100) + "%)\n";
+            let percentage = round(group.average / group.sum * 100);
+            if(!percentage) percentage = "-";
+            group_summary += group.name + ": " + group.percentage + "% (" + percentage + "%)\n";
             group.average = 0;
             group.sum = 0;
         }
