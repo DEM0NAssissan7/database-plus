@@ -389,10 +389,13 @@ I consider this program stable now.
 
             let assignment_grade = numerator / denominator;
 
+            let offensiveness = (class_grade - assignment_grade) * weight;
+            if(offensiveness === 0) offensiveness = -0.01 * weight
             element_cache.push([element,
                                 weight / denominator,
-                                (class_grade - assignment_grade) * weight,
+                                offensiveness,
                                 Math.abs(class_grade - assignment_grade),
+                                -assignment_grade,
                                 weight]);
             element.remove();
         }
@@ -407,8 +410,11 @@ I consider this program stable now.
             case "outliars": // Most deviant from average
                 element_cache = element_cache.sort((a, b) => b[3] - a[3]);
                 break;
-            case "type": // Sort by group
+            case "grade": // Sort by assignment grade
                 element_cache = element_cache.sort((a, b) => b[4] - a[4]);
+                break;
+            case "type": // Sort by group
+                element_cache = element_cache.sort((a, b) => b[5] - a[5]);
                 break;
         }
         let container = element_by_id("ContentPlaceHolder1_GridView2").childNodes[1];
@@ -424,8 +430,32 @@ I consider this program stable now.
         element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
     }
     function add_sort_selection() {
+        let pretext = create_element("div");
+        pretext.textContent = "Sort by: ";
+        pretext.style.padding = "12px"
+        element_by_id("ContentPlaceHolder1_GridView2").appendChild(pretext);
 
+        let select = create_element("select");
+        select.for = "Category";
+        function add_option(value, title) {
+            let option = create_element("option");
+            option.textContent = title;
+            option.value = value;
+            select.appendChild(option)
+        }
+        add_option("offensive", "offensiveness");
+        add_option("grade", "score");
+        add_option("influence", "per-point influence");
+        add_option("type", "% of grade");
+        add_option("outliars", "deviancy");
+        function change_algorithm() {
+            sorting_algorithm = select.value;
+            sort_assignments();
+        }
+        select.onchange = change_algorithm;
+        pretext.appendChild(select);
     }
+    safe_run(add_sort_selection);
     safe_run(add_sort_button);
 
     // Program DOM element
