@@ -13,14 +13,26 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 */
 
 {
+    // Constants
+    const adjust_weights = true; // Change this depending on your grading structure
+    const padding = "8px";
+    const header_text_color = "#AA0000";
+
     // Basic Functions
     function create_element(name) {
         return document.createElement(name);
     }
+    function safe_run(handler) {
+        try {
+            return handler();
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     // Math
     function round(number, accuracy) {
-        if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
+        if(accuracy || accuracy === 0) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
     }
     function get_letter_grade(grade) {
@@ -59,13 +71,15 @@ The end goal is to port peace academy db+ to this library in order for it to bec
     }
 
     /* Grade Manager */
+    let grades = [];
     {
-        let class_grade_average = 0;
-        let assignment_grade_average = 0;
-        let gpa = 0;
-        let assignments = [];
-        let classes = [];
-        function Assignment (name, date, category, percent_weight, score, max_score, id) {
+        let average_grade = 0;
+        function Class (name, percent_grade) {
+            this.class_name = name;
+            this.grade = percent_grade;
+            this.letter_grade = get_letter_grade(percent_grade);
+        }
+        function Assignment (name, date, category, percent_weight, score, max_score) {
             this.assignment_name = name;
             this.date = date;
             this.category = category;
@@ -73,10 +87,20 @@ The end goal is to port peace academy db+ to this library in order for it to bec
             this.score = score;
             this.max = max_score;
         }
-        function Class (name, percent_grade) {
-            this.class_name = name;
-            this.grade = percent_grade;
-            this.letter_grade = get_letter_grade(percent_grade);
+        function add_managed_class (name, percent_grade) {
+            let _class = new Class(name, percent_grade);
+            grades.push(_class);
+            return _class;
+        }
+        function add_managed_assignment (name, date, category, percent_weight, score, max_score) {
+            let assignment = new Assignment(name, date, category, percent_weight, score, max_score);
+            grades.push(assignment);
+            return assignment;
+        }
+        function is_assignment(object) {
+            if(object.class_id)
+                return true;
+            return true;
         }
         function get_offensiveness(assignment) {
             let offensiveness = (average_grade - (assignment.score / assignment.max_score)) * assignment.weight;
@@ -126,11 +150,12 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         table = create_table();
         document.getElementById("d_table").replaceWith(table);
     }
-    function create_table_entry(...fields) {
+    function create_table_entry(fields) {
         let container = create_element("tr");
         function entry(text) {
             let td = create_element("td");
             td.innerText = text;
+            td.style.padding = "5px";
             container.appendChild(td);
             return td;
         }
@@ -148,40 +173,48 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         if(entries_enum.score) entries.push("Score");
         if(entries_enum.max) entries.push("Max");
         if(entries_enum.max && entries_enum.score) entries.push("% Score");
+        entries.push("Drop");
         add_table_entry(
-            create_table_entry( "Date", 
-                                "Name", 
-                                "Category",
-                                "% Weight",
-                                "Score",
-                                "Max",
-                                "% Score")
+            create_table_entry(entries)
         );
     }
     function label_class() {
         clear_table();
-        add_table_entry(
-            create_table_entry( "",
-                                " Name ", 
-                                " % Grade ", 
-                                " Letter Grade ")
-        );
+        let table_entry = create_table_entry([  "",
+                                                " Name ", 
+                                                " % Grade ", 
+                                                " Letter Grade "])
+        table_entry.style.fontWeight = "bold";
+        table_entry.style.color = "#AA0000"
+        add_table_entry(table_entry);
     }
     function create_assignment_entry(assignment_name, date, category, percent_weight, score, max_score) {
         let container = create_element("tr");
         function entry(text) {
             let td = create_element("td");
             td.innerText = text;
+            td.style.padding = "5px";
             container.appendChild(td);
             return td;
         }
-        if(date) entry(date);
-        if(assignment_name) entry(assignment_name);
-        if(category) entry(category);
-        if(percent_weight) entry(round(percent_weight));
-        if(score !== null) entry(round(score)).contentEditable=true;
-        if(max_score !== null) entry(max_score);
-        if(score !== null && max_score !== null) entry(round(score/max_score)).contentEditable=true;
+        if(date) entry(date); // Date
+        if(assignment_name) entry(assignment_name); // Name
+        if(category) entry(category); // Category
+        if(percent_weight !== null) entry(round(percent_weight)); // Weight
+
+        let score_element = entry(round(score));
+        score_element.contentEditable=true;
+        score_element.style.color = "#2760e3"
+        score_element.style.fontWeight = "bold"
+        
+        if(max_score !== null) entry(max_score); // Max
+        if(score !== null && max_score !== null) entry(round(score/max_score * 100, 0)).contentEditable=true; // Percent
+
+        // Add drop checkbox
+        let input = create_element("input");
+        input.type = "checkbox";
+        container.appendChild(input);
+
         return container;
     }
     function create_class_entry(class_name, percentage_grade, view_handler) {
@@ -189,6 +222,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         function entry(text) {
             let td = create_element("td");
             td.innerText = text;
+            td.style.padding = "5px";
             container.appendChild(td);
             return td;
         }
@@ -198,8 +232,13 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 
         container.appendChild(button);
         entry(class_name);
-        entry(round(percentage_grade)).contentEditable = true;
-        entry(get_letter_grade(percentage_grade));
+        let grade_element = entry(round(percentage_grade));
+        grade_element.contentEditable = true;
+        grade_element.contentEditable=true;
+        grade_element.style.color = "#2760e3"
+        grade_element.style.fontWeight = "bold"
+
+        entry(get_letter_grade(percentage_grade)).style.fontWeight = "bold";
         return container;
     }
     
@@ -215,7 +254,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
                 _element.style.outlineColor = "gray";
                 _element.style.outlineStyle = "groove";
                 _element.style.outlineWidth = "thin";
-                _element.style.textAlign = "center";
+                // _element.style.textAlign = "center";
             }
         }
     }
@@ -238,8 +277,22 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         add_element(create_table());
         override_page_view();
     }
-    init();
-    place_branding();
+
+    // HTML Interactions (to help driver development)
+    function get_num(string) {
+        let parse_float = parseFloat(string);
+        if(parse_float) return parse_float;
+        return 0;
+    }
+    function get_path(path) {
+        return document.querySelector(path);
+    }
+    function get_elements(name) {
+        return document.getElementsByClassName(name)
+    }
+    function element_by_id(id){
+        return document.getElementById(id);
+    }
 
     /* API */
     function set_mode(mode) {
@@ -256,7 +309,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         console.log("Mode set to '" + mode + "'");
     }
     function add_assignment(assignment_name, date, category, percent_weight, score, max_score) {
-       add_table_entry(create_class_entry(assignment_name, date, category, percent_weight, score, max_score));
+       add_table_entry(create_assignment_entry(assignment_name, date, category, percent_weight, score, max_score));
     }
     function has_entries(name, date, category, weight, score, max) {
        entries_enum = {
@@ -271,11 +324,64 @@ The end goal is to port peace academy db+ to this library in order for it to bec
     function add_class(class_name, percentage_grade, view_handler) {
         add_table_entry(create_class_entry(class_name, percentage_grade, view_handler));
     }
+    /* 
+        How to make a driver:
+        1. Tell the program which labels it will be provided using entries_enum
+        2. Create logic for program to figure out whether to be in class view or assignment view
+        3. Add classes and/or assignments accordingly
+    */
     function driver_init() {
         // Grab source data
-        set_mode("class");
-        add_class("Biology", 90);
-        style();
+        if(get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)"))
+            return "menu";
+        if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)")) {
+            set_mode("class");
+            // Get classes
+            safe_run(() => {
+                let element;
+                let i = 2;
+                while (true) {
+                    element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(" + i + ")");
+                    if(!element) break;
+                    let href = element.childNodes[1].childNodes[1].href;
+                    add_class(  element.childNodes[2].innerText,
+                                get_num(element.childNodes[6].innerText),
+                                () => {location.href = href});
+                    i++;
+                }
+            });
+            return;
+        }
+        if(get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child(2)")) {
+            set_mode("assignment");
+
+            safe_run(() => {
+                let element;
+                let i = 2;
+                while (true) {
+                    element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ i + ")");
+                    if(!element) break;
+                    let nodes = element.childNodes;
+                    console.log(get_num(nodes[5].innerText))
+                    add_assignment(
+                        nodes[4].innerText,
+                        nodes[2].innerText,
+                        nodes[3].innerText,
+                        get_num(nodes[6].innerText),
+                        get_num(nodes[5].innerText) ?? 0,
+                        get_num(nodes[7].innerText),
+                        nodes[11].innerText,
+                        nodes[9].childNodes[0].childNodes[0].checked
+                    );
+                    i++
+                }
+            });
+        }
     }
+
+    // Execution clause
+    init();
+    place_branding();
     driver_init();
+    style();
 }
