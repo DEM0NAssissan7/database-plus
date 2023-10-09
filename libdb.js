@@ -60,20 +60,21 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 
     /* Grade Manager */
     {
-        let average_grade = 0;
+        let class_grade_average = 0;
+        let assignment_grade_average = 0;
         let gpa = 0;
         let assignments = [];
-        let indexes = 0;
-        function Assignment (assignment_name, date, category, percent_weight, score, max_score, id) {
-            this.assignment_name = assignment_name;
+        let classes = [];
+        function Assignment (name, date, category, percent_weight, score, max_score, id) {
+            this.assignment_name = name;
             this.date = date;
             this.category = category;
             this.weight = percent_weight;
             this.score = score;
             this.max = max_score;
         }
-        function Class (class_name, percent_grade) {
-            this.class_name = class_name;
+        function Class (name, percent_grade) {
+            this.class_name = name;
             this.grade = percent_grade;
             this.letter_grade = get_letter_grade(percent_grade);
         }
@@ -271,9 +272,9 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         add_table_entry(create_class_entry(class_name, percentage_grade, view_handler));
     }
     function driver_init() {
-        // Initialize grade driver (to grab data from whatever source)
+        // Grab source data
         set_mode("class");
-        add_table_entry(create_class_entry("Test", 90));
+        add_class("Biology", 90);
         style();
     }
     driver_init();
