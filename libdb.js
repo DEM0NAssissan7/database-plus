@@ -497,6 +497,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         3. Add classes and/or assignments accordingly
     */
     function driver_init() {
+        has_entries(true, true, true, true, true, true);
         // Grab source data
         if( get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)") ||
             get_path("#ContentPlaceHolder1_DropDownList1") ||
