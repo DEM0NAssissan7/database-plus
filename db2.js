@@ -18,6 +18,7 @@
     const padding = "5px";
     const header_text_color = "#AA0000";
     const score_text_color = "#2760e3";
+    const max_text_color = "#8a0000";
 
     // Basic Functions
     function create_element(name) {
@@ -152,6 +153,18 @@
     function sort_classes() {
         grades = grades.sort((a, b) => a.grade - b.grade);
     }
+    function sort_grades() {
+        switch(type) {
+            case "assignment":
+                sort_assignments();
+                break;
+            case "class":
+                sort_classes();
+                break;
+            default:
+                throw new Error("Type '" + type + "' is not valid.");
+        }
+    }
 
     /* Display engine */
     let display, table, average_grade_element;
@@ -257,11 +270,11 @@
             return td;
         }
         if(date) entry(date); // Date
-        if(percent_weight !== null) entry(round(percent_weight)); // Weight
+        if(percent_weight !== null) entry(round(percent_weight)).style.fontWeight = "bold"; // Weight
         if(category) entry(category); // Category
         if(assignment_name) entry(assignment_name); // Name
 
-        let percent_element = entry(round(score/max_score * 100, 0)); // 
+        let percent_element = entry(round(score/max_score * 100, 0)); //  Percent grade
         percent_element.style.color = "green";
         percent_element.style.fontWeight = "bold";
 
@@ -280,7 +293,7 @@
         score_element.style.padding = padding;
         container.appendChild(score_element);
         
-        entry(max_score); // Max
+        entry(max_score).style.color = max_text_color; // Max
 
         // Add drop checkbox
         let input = create_element("input");
@@ -369,7 +382,6 @@
         let average_grade;
         switch(get_type()) {
             case "assignment":
-                sort_assignments();
                 label_assignment(entries_enum);
                 display_assignments();
 
@@ -377,7 +389,6 @@
                 change_average_grade("[" + get_letter_grade(average_grade) + "] " + average_grade + "%");
                 break;
             case "class":
-                sort_classes();
                 label_class();
                 display_classes();
 
@@ -440,6 +451,7 @@
         add_element(create_table()); // Add table to view
         add_average_grade_element(); // Add average grade footer
 
+        sort_grades(); // Sort grades so they are easier to analyze
         update_display(); // Update display so grades are shown
     }
 
