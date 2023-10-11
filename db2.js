@@ -1,21 +1,30 @@
-/* School grade database processing and display library
+// ==UserScript==
+// @name         Database+
+// @namespace    http://tampermonkey.net/
+// @version      2.0
+// @description  A nice upgrade to the Peace Database
+// @author       Abdurahman Elmawi
+// @match        http://peaceacademy.net/*
+// @icon         https://static.toiimg.com/thumb/msid-51767839,imgsize-17046,width-400,resizemode-4/51767839.jpg
+// @grant        none
+// ==/UserScript==
 
-The goal of this project is to provide a standard where any school grade database can enjoy the features of database+.
-This is for me when I go to college God willing, and the grades websites may suck, so I have to recode database+ for 
-every website I want to use it.
+/* TODO:
 
-Instead, this project will standardize all calculations, displays, features, and designs. All you would need to do to port it to
-a new website is implement it and tell libdb what the grades/weights (and other things) are.
+X- Sort by most influencial grades/classes
+X- Be able to add assignments/classes
+X- Identify each assignment type and its grade
 
-The end goal is to port peace academy db+ to this library in order for it to become monolithic and portable.
+I consider this program stable now.
 
-"Portability! Portability! Portability!" - Stoove Jeebs
 */
 
-{
+(function() {
+    'use strict';
+
     // Constants
     const adjust_weights = true; // Change this depending on your grading structure
-    const program_name = "libDB";
+    const program_name = "DB2";
     const padding = "5px";
     const header_text_color = "#AA0000";
     const score_text_color = "#2760e3";
@@ -216,8 +225,8 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         let entries = [];
         if(entries_enum.date) entries.push("Date");
         if(entries_enum.weight) entries.push("Weight");
-        if(entries_enum.name) entries.push("Name");
         if(entries_enum.category) entries.push("Category");
+        if(entries_enum.assignment_name) entries.push("Name");
         if(entries_enum.max && entries_enum.score) entries.push("% Score");
         if(entries_enum.score) entries.push("Score");
         if(entries_enum.max) entries.push("Max");
@@ -248,8 +257,8 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         }
         if(date) entry(date); // Date
         if(percent_weight !== null) entry(round(percent_weight)); // Weight
-        if(assignment_name) entry(assignment_name); // Name
         if(category) entry(category); // Category
+        if(assignment_name) entry(assignment_name); // Name
 
         let percent_element = entry(round(score/max_score * 100, 0)); // 
         percent_element.style.color = "green";
@@ -402,7 +411,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 
     // Initialization
     let entries_enum = { // Use this as a template
-        name: true,
+        assignment_name: true,
         date: true,
         category: true,
         weight: true,
@@ -551,4 +560,4 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         if(e !== 0)
             console.log(e);
     }
-}
+})();
