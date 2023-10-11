@@ -15,10 +15,11 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 {
     // Constants
     const adjust_weights = true; // Change this depending on your grading structure
-    const program_name = "libDB";
+    const program_name = "Database2";
     const padding = "5px";
     const header_text_color = "#AA0000";
     const score_text_color = "#2760e3";
+    const max_text_color = "#8a0000";
 
     // Basic Functions
     function create_element(name) {
@@ -104,16 +105,20 @@ The end goal is to port peace academy db+ to this library in order for it to bec
     }
     function get_avg_grade() {
         let sum = 0;
+        let weights = 0;
         switch(type) {
             case "assignment":
                 weight_sum = 0;
                 grade_sum = 0;
                 for(let grade of grades) {
-                    if(grade.drop) continue;
-                    grade_sum += (grade.score / grade.max) * grade.weight;
+                    let a = (grade.score / grade.max) * grade.weight;
+                    grade_sum += a;
                     weight_sum += grade.weight;
+                    if(grade.drop) continue;
+                    sum += a;
+                    weights += grade.weight;
                 }
-                average_grade = grade_sum / weight_sum * 100;
+                average_grade = sum / weights * 100;
                 return average_grade;
             case "class":
                 for(let grade of grades)
@@ -140,7 +145,26 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         return type;
     }
     function get_offensiveness(assignment) {
-        return (grade_sum - (assignment.score / assignment.max_score * assignment.weight)) / (weight_sum - assignment.weight);
+        return (grade_sum - (assignment.score / assignment.max * assignment.weight)) / (weight_sum - assignment.weight);
+    }
+    function sort_assignments() {
+        get_avg_grade();
+        grades = grades.sort((a, b) => get_offensiveness(b) - get_offensiveness(a));
+    }
+    function sort_classes() {
+        grades = grades.sort((a, b) => a.grade - b.grade);
+    }
+    function sort_grades() {
+        switch(type) {
+            case "assignment":
+                sort_assignments();
+                break;
+            case "class":
+                sort_classes();
+                break;
+            default:
+                throw new Error("Type '" + type + "' is not valid.");
+        }
     }
 
     /* Display engine */
@@ -174,6 +198,8 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         
         display.style.width = "-webkit-fill-available";
         display.style.height = "-webkit-fill-available";
+
+        display.style.fontFamily = "system-ui"
     }
     function add_average_grade_element() {
         average_grade_element = add_element(create_element("p"));
@@ -216,8 +242,8 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         let entries = [];
         if(entries_enum.date) entries.push("Date");
         if(entries_enum.weight) entries.push("Weight");
-        if(entries_enum.name) entries.push("Name");
         if(entries_enum.category) entries.push("Category");
+        if(entries_enum.assignment_name) entries.push("Name");
         if(entries_enum.max && entries_enum.score) entries.push("% Score");
         if(entries_enum.score) entries.push("Score");
         if(entries_enum.max) entries.push("Max");
@@ -247,13 +273,9 @@ The end goal is to port peace academy db+ to this library in order for it to bec
             return td;
         }
         if(date) entry(date); // Date
-        if(percent_weight !== null) entry(round(percent_weight)); // Weight
-        if(assignment_name) entry(assignment_name); // Name
+        if(percent_weight !== null) entry(percent_weight).style.fontWeight = "bold"; // Weight
         if(category) entry(category); // Category
-
-        let percent_element = entry(round(score/max_score * 100, 0)); // 
-        percent_element.style.color = "green";
-        percent_element.style.fontWeight = "bold";
+        if(assignment_name) entry(assignment_name); // Name
 
         let score_element = create_element("input"); // Score
         score_element.type = "text";
@@ -270,7 +292,11 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         score_element.style.padding = padding;
         container.appendChild(score_element);
         
-        entry(max_score); // Max
+        entry(max_score).style.color = max_text_color; // Max
+
+        let percent_element = entry(round(score/max_score * 100, 0)); //  Percent score
+        percent_element.style.color = "green";
+        // percent_element.style.fontWeight = "bold";
 
         // Add drop checkbox
         let input = create_element("input");
@@ -355,9 +381,6 @@ The end goal is to port peace academy db+ to this library in order for it to bec
                 ));
         }
     }
-    function display_averages() {
-        change_average_grade(get_avg_grade());
-    }
     function update_display() {
         let average_grade;
         switch(get_type()) {
@@ -373,7 +396,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
                 display_classes();
 
                 average_grade = round(get_avg_grade());
-                change_average_grade("GPA: " + get_gpa() + " | (" + average_grade + "%) [" + get_letter_grade(average_grade) + "]");
+                change_average_grade("GPA: " + round(get_gpa()) + " | (" + average_grade + "%) [" + get_letter_grade(average_grade) + "]");
                 break;
             default:
                 console.error("Cannot update display: no proper type set (" + get_type() + ")");
@@ -402,7 +425,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
 
     // Initialization
     let entries_enum = { // Use this as a template
-        name: true,
+        assignment_name: true,
         date: true,
         category: true,
         weight: true,
@@ -422,7 +445,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         header.style.textAlign = "center";
     }
     function init() {
-        override_page_view(); // Hide current page
+        override_page_view(); // Hide existing page
         driver_init(); // Run driver
 
         init_display(); // Initialize display
@@ -431,6 +454,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         add_element(create_table()); // Add table to view
         add_average_grade_element(); // Add average grade footer
 
+        sort_grades(); // Sort grades so they are easier to analyze
         update_display(); // Update display so grades are shown
     }
 
@@ -528,12 +552,11 @@ The end goal is to port peace academy db+ to this library in order for it to bec
                     element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ i + ")");
                     if(!element) break;
                     let nodes = element.childNodes;
-                    console.log(get_num(nodes[5].innerText))
                     add_assignment(
                         nodes[4].innerText,
                         nodes[2].innerText,
                         nodes[3].innerText,
-                        get_num(nodes[6].innerText),
+                        round(get_num(nodes[6].innerText)),
                         get_num(nodes[5].innerText) ?? 0,
                         get_num(nodes[7].innerText),
                         nodes[9].childNodes[0].childNodes[0].checked
@@ -544,11 +567,11 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         }
     }
 
-    // Execution clause
+    // Execute Program
     try {
         init(); // Initialize GUI
     } catch (e) {
         if(e !== 0)
-            console.log(e);
+            console.error(e);
     }
 }

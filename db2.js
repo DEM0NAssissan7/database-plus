@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Database+
+// @name         Database2
 // @namespace    http://tampermonkey.net/
 // @version      2.0
-// @description  A nice upgrade to the Peace Database
+// @description  An upgraded Peace Database, built on libDB
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
 // @icon         https://static.toiimg.com/thumb/msid-51767839,imgsize-17046,width-400,resizemode-4/51767839.jpg
@@ -14,7 +14,7 @@
 
     // Constants
     const adjust_weights = true; // Change this depending on your grading structure
-    const program_name = "DB2";
+    const program_name = "Database2";
     const padding = "5px";
     const header_text_color = "#AA0000";
     const score_text_color = "#2760e3";
@@ -197,6 +197,8 @@
         
         display.style.width = "-webkit-fill-available";
         display.style.height = "-webkit-fill-available";
+
+        display.style.fontFamily = "system-ui"
     }
     function add_average_grade_element() {
         average_grade_element = add_element(create_element("p"));
@@ -270,13 +272,9 @@
             return td;
         }
         if(date) entry(date); // Date
-        if(percent_weight !== null) entry(round(percent_weight)).style.fontWeight = "bold"; // Weight
+        if(percent_weight !== null) entry(percent_weight).style.fontWeight = "bold"; // Weight
         if(category) entry(category); // Category
         if(assignment_name) entry(assignment_name); // Name
-
-        let percent_element = entry(round(score/max_score * 100, 0)); //  Percent grade
-        percent_element.style.color = "green";
-        percent_element.style.fontWeight = "bold";
 
         let score_element = create_element("input"); // Score
         score_element.type = "text";
@@ -294,6 +292,10 @@
         container.appendChild(score_element);
         
         entry(max_score).style.color = max_text_color; // Max
+
+        let percent_element = entry(round(score/max_score * 100, 0)); //  Percent score
+        percent_element.style.color = "green";
+        // percent_element.style.fontWeight = "bold";
 
         // Add drop checkbox
         let input = create_element("input");
@@ -393,7 +395,7 @@
                 display_classes();
 
                 average_grade = round(get_avg_grade());
-                change_average_grade("GPA: " + get_gpa() + " | (" + average_grade + "%) [" + get_letter_grade(average_grade) + "]");
+                change_average_grade("GPA: " + round(get_gpa()) + " | (" + average_grade + "%) [" + get_letter_grade(average_grade) + "]");
                 break;
             default:
                 console.error("Cannot update display: no proper type set (" + get_type() + ")");
@@ -442,7 +444,7 @@
         header.style.textAlign = "center";
     }
     function init() {
-        override_page_view(); // Hide current page
+        override_page_view(); // Hide existing page
         driver_init(); // Run driver
 
         init_display(); // Initialize display
@@ -553,7 +555,7 @@
                         nodes[4].innerText,
                         nodes[2].innerText,
                         nodes[3].innerText,
-                        get_num(nodes[6].innerText),
+                        round(get_num(nodes[6].innerText)),
                         get_num(nodes[5].innerText) ?? 0,
                         get_num(nodes[7].innerText),
                         nodes[9].childNodes[0].childNodes[0].checked
@@ -564,7 +566,7 @@
         }
     }
 
-    // Execution clause
+    // Execute Program
     try {
         init(); // Initialize GUI
     } catch (e) {
