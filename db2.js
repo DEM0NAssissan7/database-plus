@@ -533,7 +533,6 @@
                     element = get_path("#ContentPlaceHolder1_GridView2 > tbody > tr:nth-child("+ i + ")");
                     if(!element) break;
                     let nodes = element.childNodes;
-                    console.log(get_num(nodes[5].innerText))
                     add_assignment(
                         nodes[4].innerText,
                         nodes[2].innerText,
@@ -554,6 +553,6 @@
         init(); // Initialize GUI
     } catch (e) {
         if(e !== 0)
-            console.log(e);
+            console.error(e);
     }
 })();
