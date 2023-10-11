@@ -149,6 +149,9 @@
         get_avg_grade();
         grades = grades.sort((a, b) => get_offensiveness(b) - get_offensiveness(a));
     }
+    function sort_classes() {
+        grades = grades.sort((a, b) => a.grade - b.grade);
+    }
 
     /* Display engine */
     let display, table, average_grade_element;
@@ -374,6 +377,7 @@
                 change_average_grade("[" + get_letter_grade(average_grade) + "] " + average_grade + "%");
                 break;
             case "class":
+                sort_classes();
                 label_class();
                 display_classes();
 
