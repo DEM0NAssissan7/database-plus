@@ -9,16 +9,6 @@
 // @grant        none
 // ==/UserScript==
 
-/* TODO:
-
-X- Sort by most influencial grades/classes
-X- Be able to add assignments/classes
-X- Identify each assignment type and its grade
-
-I consider this program stable now.
-
-*/
-
 (function() {
     'use strict';
 
@@ -113,16 +103,20 @@ I consider this program stable now.
     }
     function get_avg_grade() {
         let sum = 0;
+        let weights = 0;
         switch(type) {
             case "assignment":
                 weight_sum = 0;
                 grade_sum = 0;
                 for(let grade of grades) {
-                    if(grade.drop) continue;
-                    grade_sum += (grade.score / grade.max) * grade.weight;
+                    let a = (grade.score / grade.max) * grade.weight;
+                    grade_sum += a;
                     weight_sum += grade.weight;
+                    if(grade.drop) continue;
+                    sum += a;
+                    weights += grade.weight;
                 }
-                average_grade = grade_sum / weight_sum * 100;
+                average_grade = sum / weights * 100;
                 return average_grade;
             case "class":
                 for(let grade of grades)
@@ -149,7 +143,11 @@ I consider this program stable now.
         return type;
     }
     function get_offensiveness(assignment) {
-        return (grade_sum - (assignment.score / assignment.max_score * assignment.weight)) / (weight_sum - assignment.weight);
+        return (grade_sum - (assignment.score / assignment.max * assignment.weight)) / (weight_sum - assignment.weight);
+    }
+    function sort_assignments() {
+        get_avg_grade();
+        grades = grades.sort((a, b) => get_offensiveness(b) - get_offensiveness(a));
     }
 
     /* Display engine */
@@ -364,13 +362,11 @@ I consider this program stable now.
                 ));
         }
     }
-    function display_averages() {
-        change_average_grade(get_avg_grade());
-    }
     function update_display() {
         let average_grade;
         switch(get_type()) {
             case "assignment":
+                sort_assignments();
                 label_assignment(entries_enum);
                 display_assignments();
 
