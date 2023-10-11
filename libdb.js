@@ -78,6 +78,8 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         let type = null;
         let average_grade = 0;
         let count = 0;
+        let grade_sum = 0;
+        let weight_sum = 0;
         function Class (name, percent_grade, view_handler) {
             this.class_name = name;
             this.grade = percent_grade;
@@ -108,13 +110,14 @@ The end goal is to port peace academy db+ to this library in order for it to bec
             let sum = 0;
             switch(type) {
                 case "assignment":
-                    let weight_sum = 0;
+                    weight_sum = 0;
+                    grade_sum = 0;
                     for(let grade of grades) {
                         if(grade.drop) continue;
-                        sum += (grade.score / grade.max) * grade.weight;
+                        grade_sum += (grade.score / grade.max) * grade.weight;
                         weight_sum += grade.weight;
                     }
-                    average_grade = sum / weight_sum * 100;
+                    average_grade = grade_sum / weight_sum * 100;
                     return average_grade;
                 case "class":
                     for(let grade of grades)
@@ -141,9 +144,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
             return type;
         }
         function get_offensiveness(assignment) {
-            let offensiveness = (average_grade - (assignment.score / assignment.max_score)) * assignment.weight;
-            if(offensiveness === 0) offensiveness = -0.01 * assignment.weight;
-            return offensiveness;
+            return (grade_sum - (assignment.score / assignment.max_score * assignment.weight)) / (weight_sum - assignment.weight);
         }
     }
 
@@ -188,6 +189,7 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         
         average_grade_element.style.fontSize = "48px";
         average_grade_element.style.textAlign = "center";
+        average_grade_element.style.fontWeight = "bold";
     }
     function change_average_grade(value) {
         average_grade_element.childNodes[0].textContent = value;
@@ -311,10 +313,10 @@ The end goal is to port peace academy db+ to this library in order for it to bec
         grade_element.style.width = "6ch";
         grade_element.style.outline = "none";
         grade_element.style.borderWidth = "0px";
+        grade_element.style.padding = padding;
         grade_element.onchange = () => {
             score_change_handler(get_num(grade_element.value));
         };
-        grade_element.style.padding = padding;
         container.appendChild(grade_element);
 
         entry(get_letter_grade(percentage_grade)).style.fontWeight = "bold";
