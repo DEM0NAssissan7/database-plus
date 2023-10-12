@@ -52,7 +52,6 @@
         function test(min_value, letter) {
             if(grade >= min_value) result = letter;
         }
-        test(59, "F");
         test(60, "D");
         test(65, "D+");
         test(70, "C");
