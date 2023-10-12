@@ -15,10 +15,20 @@
     // Constants
     const adjust_weights = true; // Change this depending on your grading structure
     const program_name = "Database2";
-    const padding = "5px";
-    const header_text_color = "#AA0000";
-    const score_text_color = "#2760e3";
-    const max_text_color = "#8a0000";
+    const footer_text = "Abdurahman Elmawi 2023"
+    const padding = "6px";
+
+    // Colors
+    const header_text_color = "white";
+    const header_background_color = "black";
+    const name_color = "#00008d";
+    const category_color = "#990d0d";
+    const score_text_color = "#2839bf";
+    const max_text_color = "#2839bf";
+    const percent_score_color = "#289bbf";
+
+    const background = "white";
+    const text_color = "black";
 
     // Basic Functions
     function create_element(name) {
@@ -188,17 +198,20 @@
     }
     function init_display() {
         console.log("Creating display");
-        let root = document.querySelector("html");
+        let root = get_path("html");
 
         display = root.appendChild(create_element("display"));
         display.style.position = "absolute";
         display.style.top = "0px";
         display.style.left = "0px";
         
-        display.style.width = "-webkit-fill-available";
-        display.style.height = "-webkit-fill-available";
+        display.style.margin = "auto"
+        display.style.width = "100%";
+        display.style.height = "auto";
 
-        display.style.fontFamily = "system-ui"
+        display.style.fontFamily = "system-ui";
+        display.style.background = background;
+        display.style.color = text_color;
     }
     function add_average_grade_element() {
         average_grade_element = add_element(create_element("p"));
@@ -243,13 +256,15 @@
         if(entries_enum.weight) entries.push("Weight");
         if(entries_enum.category) entries.push("Category");
         if(entries_enum.assignment_name) entries.push("Name");
-        if(entries_enum.max && entries_enum.score) entries.push("% Score");
         if(entries_enum.score) entries.push("Score");
+        if(entries_enum.max && entries_enum.score) entries.push("% Score");
         if(entries_enum.max) entries.push("Max");
         entries.push("Drop");
         let table_entry = create_table_entry(entries);
         table_entry.style.fontWeight = "bold";
         table_entry.style.color = header_text_color;
+        table_entry.style.background = header_background_color;
+        table_entry.style.outlineWidth = "0px"
         add_table_entry(table_entry);
     }
     function label_class() {
@@ -260,7 +275,19 @@
                                                 " Letter Grade "])
         table_entry.style.fontWeight = "bold";
         table_entry.style.color = header_text_color;
+        table_entry.style.background = header_background_color;
         add_table_entry(table_entry);
+    }
+    function style_score_element(element) {
+        element.type = "text";
+        element.style.color = score_text_color;
+        element.style.background = "none";
+        element.style.fontWeight = "bold";
+        element.style.width = "6ch";
+        element.style.fontSize = "14px"
+        element.style.outline = "none";
+        element.style.borderWidth = "0px";
+        element.style.verticalAlign = "-webkit-baseline-middle";
     }
     function create_assignment_entry(assignment_name, date, category, percent_weight, score, max_score, dropped, score_change_handler, drop_handler) {
         let container = create_element("tr");
@@ -271,31 +298,33 @@
             container.appendChild(td);
             return td;
         }
-        if(date) entry(date); // Date
+        if(date) entry(date).style.color = name_color; // Date
         if(percent_weight !== null) entry(percent_weight).style.fontWeight = "bold"; // Weight
-        if(category) entry(category); // Category
-        if(assignment_name) entry(assignment_name); // Name
+        if(category) entry(category).style.color = category_color; // Category
+        if(assignment_name) {
+            let element = entry(assignment_name);
+            element.style.fontStyle = "italic";
+            // element.style.color = name_color;
+        } // Name
 
         let score_element = create_element("input"); // Score
-        score_element.type = "text";
+        style_score_element(score_element);
         score_element.value = score;
-        score_element.contentEditable=true;
-        score_element.style.color = score_text_color;
-        score_element.style.fontWeight = "bold";
-        score_element.style.width = "6ch";
-        score_element.style.outline = "none";
-        score_element.style.borderWidth = "0px";
         score_element.onchange = () => {
             score_change_handler(get_num(score_element.value));
         };
         score_element.style.padding = padding;
         container.appendChild(score_element);
-        
-        entry(max_score).style.color = max_text_color; // Max
 
-        let percent_element = entry(round(score/max_score * 100, 0)); //  Percent score
-        percent_element.style.color = "green";
-        // percent_element.style.fontWeight = "bold";
+        let percent_element = entry(round(score/max_score * 100, 0) + "%"); //  Percent score
+        percent_element.style.color = percent_score_color;
+        percent_element.style.fontSize = "12px"
+        percent_element.style.fontWeight = "bold";
+        
+        let max_element = entry(max_score)
+        max_element.style.color = max_text_color; // Max
+        max_element.style.fontWeight = "bold";
+        max_element.style.fontSize = "14px"
 
         // Add drop checkbox
         let input = create_element("input");
@@ -324,16 +353,8 @@
         container.appendChild(button);
         entry(class_name);
         let grade_element = create_element("input"); // Score
-        grade_element.type = "text";
+        style_score_element(grade_element);
         grade_element.value = percentage_grade;
-        grade_element.contentEditable=true;
-
-        grade_element.style.color = score_text_color;
-        grade_element.style.fontWeight = "bold"
-        grade_element.style.width = "6ch";
-        grade_element.style.outline = "none";
-        grade_element.style.borderWidth = "0px";
-        grade_element.style.padding = padding;
         grade_element.onchange = () => {
             score_change_handler(get_num(grade_element.value));
         };
@@ -433,15 +454,37 @@
     };
     function place_branding() {
         // Header
-        let header = add_element(create_element("p"));
-        header.id = "header";
-        
-        const text = document.createTextNode(program_name);
-        header.appendChild(text);
-        header.style.fontSize = "24px";
-        header.style.fontWeight = "bold";
-        
-        header.style.textAlign = "center";
+        {
+            let header = add_element(create_element("p"));
+            header.id = "header";
+            
+            const text = document.createTextNode(program_name);
+            header.appendChild(text);
+            header.style.fontSize = "24px";
+            header.style.fontWeight = "bold";
+            
+            header.style.textAlign = "center";
+        }
+
+        // Page title
+        document.title = program_name;
+
+        // Footer
+        {
+            let footer = add_element(create_element("p"));
+            footer.id = "footer";
+
+            footer.textContent = footer_text;
+            footer.style.fontSize = "14px";
+            footer.style.fontWeight = "bold";
+            footer.style.position = "absolute";
+            footer.style.bottom = 0;
+            footer.style.padding = padding;
+            footer.style.margin = "auto";
+            
+            footer.style.textAlign = "right";
+        }
+
     }
     function init() {
         override_page_view(); // Hide existing page
@@ -477,6 +520,7 @@
     function cancel_init() {
         document.head.hidden = false;
         document.body.hidden = false;
+        document.background = "none";
         throw 0;
     }
     function set_mode(mode) {
