@@ -561,9 +561,9 @@ I consider this program stable now.
                 case "class":
                     if(apply_theming) class_theme();
                     update_percentages();
-                    grade = round(get_class_grade(), 1);
+                    grade = round(get_class_grade(), 0);
                     update_group_summary();
-                    change_dom_text("[" + get_letter_grade(grade) + "] " + round(grade, 0) + "%");
+                    change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
                     change_sub_text(group_summary);
                     break;
                 case "menu":
