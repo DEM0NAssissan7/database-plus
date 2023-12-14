@@ -30,7 +30,7 @@ I consider this program stable now.
         return document.querySelector(path);
     }
     function round(number, accuracy) {
-        if(accuracy) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
+        if(accuracy || accuracy === 0) return Math.round(number * Math.pow(10, accuracy)) / Math.pow(10, accuracy)
         return Math.round(number * 100) / 100;
     }
     function get_elements(name) {
@@ -553,10 +553,10 @@ I consider this program stable now.
             switch(page_type) {
                 case "student":
                     if(apply_theming) student_theme();
-                    grade = round(get_student_grade(), 1);
+                    grade = round(get_student_grade(), 0);
                     gpa = round(get_gpa());
                     real_gpa = round(get_real_gpa());
-                    change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + round(grade, 0) + "%, " + real_gpa + ")");
+                    change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
                     break;
                 case "class":
                     if(apply_theming) class_theme();
