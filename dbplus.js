@@ -556,14 +556,14 @@ I consider this program stable now.
                     grade = round(get_student_grade(), 1);
                     gpa = round(get_gpa());
                     real_gpa = round(get_real_gpa());
-                    change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + grade + "%, " + real_gpa + ")");
+                    change_dom_text("[" + get_letter_grade(grade) + "] GPA: " + gpa + " | (" + round(grade, 0) + "%, " + real_gpa + ")");
                     break;
                 case "class":
                     if(apply_theming) class_theme();
                     update_percentages();
                     grade = round(get_class_grade(), 1);
                     update_group_summary();
-                    change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
+                    change_dom_text("[" + get_letter_grade(grade) + "] " + round(grade, 0) + "%");
                     change_sub_text(group_summary);
                     break;
                 case "menu":
