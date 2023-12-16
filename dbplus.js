@@ -11,9 +11,8 @@
 
 /* TODO:
 
-X- Sort by most influencial grades/classes
-X- Be able to add assignments/classes
-X- Identify each assignment type and its grade
+- Add alternative view button to allow viewing all quarters in one nice screen
+- Add feature to display cumilative semester grade and be able to see what grades are required for a certain GPA
 
 I consider this program stable now.
 
@@ -25,7 +24,7 @@ I consider this program stable now.
     // Options
     const apply_theming = true;
 
-    // General function
+    // General functions
     function get_path(path) {
         return document.querySelector(path);
     }
@@ -86,10 +85,391 @@ I consider this program stable now.
         if(parse_float) return parse_float;
         return 0;
     }
+    function get_cookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    function reload_page() {
+        window.location.reload(true);
+    }
+
+    // Quarter memory
+    let quarters = [];
+    function get_quarter() {
+        const element = get_path("#ContentPlaceHolder1_DropDownList1");
+        if(!element) return parseInt(get_cookie("quarter"));
+        let selection_text = element.selectedOptions.item(0).textContent;
+        switch(selection_text) {
+            case "1st Quarter":
+                return 1;
+            case "2nd Quarter":
+                return 2;
+            case "Mid Term":
+                return 3;
+            case "3rd Quarter":
+                return 4;
+            case "4th Quarter":
+                return 5;
+            case "2nd Term":
+                return 6;
+        }
+    }
+    function store_quarter(quarter) {
+        document.cookie = "quarter=" + quarter;
+        return quarter;
+    }
+    function track_quarter() {
+        let grades = [];
+        let i = 0;
+        while (true) {
+            const element = get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child("+ (i + 2) + ")");
+            if(element === null) break;
+            let grade = parseInt(element.childNodes[6].innerText);
+            let name = element.childNodes[2].innerText;
+
+            grades.push({
+                grade: grade,
+                class_name: name
+            })
+
+            i++;
+        }
+        if(i !== 0) quarters[get_quarter()] = grades;
+    }
+    function export_quarters() {
+        let string = "";
+        for(let i = 0; i < quarters.length; i++) {
+            let quarter = quarters[i];
+            if(!quarter) continue;
+            let _string = "!" + i + ":";
+            for(let entry of quarter) {
+                _string += entry.class_name + "|" + entry.grade + ","
+            }
+            string += _string;
+        }
+        document.cookie = "quarters=" + string + "!";
+    }
+    function import_quarters() {
+        let string = get_cookie("quarters");
+        if(!string) return;
+        let token = "";
+        let quarter = [];
+        let name = "";
+        let index = null;
+        for(let char of string) {
+            if(char === "!") {
+                if(name.length > 0 && index)
+                    quarters[index] = quarter;
+                quarter = [];
+                token = "";
+                continue;
+            }
+            if(char === ":") {
+                index = parseInt(token);
+                token = "";
+                continue;
+            }
+            if(char === "|") {
+                name = token;
+                token = "";
+                continue;
+            }
+            if(char === ",") {
+                if(name.length < 1) console.error("Name is blank");
+                quarter.push({
+                    grade: parseInt(token),
+                    class_name: name
+                });
+                token = "";
+                continue;
+            }
+            token += char;
+        }
+    }
+    import_quarters();
+    safe_run(track_quarter);
+    export_quarters();
+    console.log("Current quarter is " + store_quarter(get_quarter()));
+
+    // Semester calculations
+    let semesters = [[],[]];
+    function group_semsters() {
+        for(let i = 0; i < quarters.length; i++) {
+            let quarter = quarters[i];
+            if(!quarter) continue;
+            let sem = 0;
+            if(i > 3) sem = 1;
+            for(let entry of quarter) {
+                let success = false;
+                for(let _quarter of semesters[sem]) {
+                    if(_quarter[0] === entry.class_name) {
+                        _quarter.push(entry.grade);
+                        success = true;
+                    }
+                }
+                if(!success) semesters[sem].push([entry.class_name, entry.grade]);
+            }
+        }
+    }
+    group_semsters();
+    console.log(semesters, quarters);
+
+    // Alternative display
+    const final_weight = 10;
+    const padding = "6px";
+    const background = "white";
+    const text_color = "black";
+    let display;
+    let tables = [];
+    let table_labels = [];
+    let table_append_buttons = [];
+    function override_page_view() {
+        document.head.hidden = true;
+        document.body.hidden = true;
+    }
+    function create_display() {
+        // Create display
+        console.log("Creating display");
+        const root = get_path("html");
+
+        display = root.appendChild(create_element("display"));
+        display.style.position = "absolute";
+        display.style.top = "0px";
+        display.style.left = "0px";
+        
+        display.style.margin = "auto"
+        display.style.width = "100%";
+        display.style.height = "auto";
+        display.style.textAlign = "center";
+
+        display.style.fontFamily = "system-ui";
+        display.style.background = background;
+        display.style.color = text_color;
+    }
+    function create_table() {
+        const table = create_element("table");
+        table.id = "d_table";
+
+        table.style.margin = "auto";
+        table.style.paddingTop = "30px";
+        table.style.top = "center";
+        table.style.left = "center";
+
+        return table;
+    }
+    function create_class_entry(class_name, grades, name_editable) {
+        const container = create_element("tr");
+        function entry(text) {
+            const td = create_element("td");
+            td.textContent = text;
+            td.style.padding = padding;
+            container.appendChild(td);
+            return td;
+        }
+
+        entry(class_name).contentEditable = name_editable ?? false;
+        for(let i = 0; i < 3; i++)
+            entry(grades[i]).contentEditable = true;
+
+        entry(get_letter_grade(0)).style.fontWeight = "bold";
+        entry(round(0, 0));
+
+
+        const button = create_element("button");
+        button.textContent = "-";
+        button.type = "button";
+        button.onclick = () => {container.remove()};
+        container.appendChild(button);
+
+        return container;
+    }
+    function label_sem1() {
+        const container = create_element("tr");
+        function entry(text) {
+            const td = create_element("td");
+            td.innerText = text;
+            td.style.padding = padding;
+            container.appendChild(td);
+            return td;
+        }
+        entry("Class");
+
+        entry("1st");
+        entry("2nd");
+        entry("Midterm");
+        entry("Semester 1");
+        entry("%");
+
+        return container;
+    }
+    function label_sem2() {
+        const container = create_element("tr");
+        function entry(text) {
+            const td = create_element("td");
+            td.innerText = text;
+            td.style.padding = padding;
+            container.appendChild(td);
+            return td;
+        }
+        entry("Class");
+
+        entry("3rd");
+        entry("4th");
+        entry("Final");
+        entry("Semester 2");
+        entry("%");
+
+        return container;
+    }
+    function style_tables() {
+        for(let table of tables) {
+            let table_entries = table.childNodes;
+            for(let element of table_entries) {
+                // Theme each row
+                element.style.outlineColor = "black";
+                element.style.outlineStyle = "outset";
+                for(let _element of element.childNodes) {
+                    // Theme each entry
+                    if(!_element.value) {
+                        _element.style.outlineColor = "gray";
+                        _element.style.outlineStyle = "groove";
+                        _element.style.outlineWidth = "thin";
+                        // _element.style.textAlign = "center";
+                    }
+                }
+            }
+        }
+    }
+    function create_table_label() {
+        const label = create_element("p");
+        const text = document.createTextNode("Database+");
+        label.appendChild(text);
+        label.style.fontSize = "48px";
+        label.style.fontWeight = "Bold";
+        label.style.width = "0%";
+        label.style.margin = "auto";
+        return label;
+    }
+    function create_table_append_button(table) {
+        const button = create_element("button");
+        button.textContent = "Add Class";
+        button.id = "button";
+        button.type = "button";
+        button.onclick = () => {
+            table.appendChild(create_class_entry("Class", [], true));
+            style_tables();
+        };
+        button.style.margin = "auto";
+        return button;
+    }
+    function calc_final_grades() {
+        for(let i = 0; i < tables.length; i++) {
+            let table = tables[i];
+            let letter_grades = [];
+            for(let j = 1; j < table.childNodes.length; j++) {
+                let element = table.childNodes[j];
+                const nodes = element.childNodes;
+    
+                let grades = [];
+                grades.push(parseInt(nodes[1].innerText));
+                grades.push(parseInt(nodes[2].innerText));
+                grades.push(parseInt(nodes[3].innerText));
+    
+                let final_grade = 0;
+                let weight;
+                let weights = 0;
+                for(let k = 0; k < grades.length; k++) {
+                    let grade = grades[k];
+                    if(!grade && grade !== 0) continue;
+
+                    if(k < 2)
+                        weight = (100 - final_weight) / 200;
+                    else
+                        weight = final_weight / 100;
+        
+                    weights += weight;
+                    final_grade += grade * weight;
+                }
+                final_grade = final_grade / weights;
+    
+                const letter_grade = get_letter_grade(round(final_grade, 0));
+                letter_grades.push(letter_grade);
+                nodes[4].innerText = letter_grade;
+                nodes[5].innerText = round(final_grade, 0);
+            }
+            let gpa = 0;
+            for(let letter of letter_grades)
+                gpa += get_gpa_point(letter);
+            gpa = gpa / letter_grades.length;
+            table_labels[i].textContent = round(gpa, 2);
+        }
+    }
+    function activate_alternative_display() {
+        console.log("Activating alternative display");
+
+        override_page_view();
+        create_display();
+
+        // Add table entries
+        tables = [create_table(),create_table()];
+        tables[0].appendChild(label_sem1());
+        tables[1].appendChild(label_sem2());
+
+        for(let i = 0; i < tables.length; i++) {
+            let table = tables[i];
+            for(let _class of semesters[i]) {
+                let grades = [];
+                for(let j = 1; j < _class.length; j++)
+                    grades.push(_class[j]);
+                table.appendChild(create_class_entry(_class[0], grades));
+            }
+        }
+        style_tables();
+
+        // Add table labels
+        table_labels = [create_table_label(), create_table_label()];
+
+        display.appendChild(tables[0]);
+        display.appendChild(create_table_append_button(tables[0]));
+        display.appendChild(table_labels[0]);
+        display.appendChild(tables[1]);
+        display.appendChild(create_table_append_button(tables[1]));
+        display.appendChild(table_labels[1]);
+        document.addEventListener('keydown', () => {setTimeout(calc_final_grades, 50)});
+        document.addEventListener('mouseup', () => {setTimeout(calc_final_grades, 50)});
+        calc_final_grades();
+
+        display.appendChild(add_reset_button());
+        create_alt_deactivation_button();
+    }
+    function deactivate_alt_view() {
+        display.remove();
+        document.head.hidden = false;
+        document.body.hidden = false;
+    }
+    function create_alternative_display_button() {
+        const button = create_element("button");
+        button.textContent = "Semester View";
+        button.id = "altdisplay";
+        button.type = "button";
+        button.onclick = activate_alternative_display;
+        document.body.appendChild(button);
+    }
+    function create_alt_deactivation_button() {
+        const button = create_element("button");
+        button.textContent = "Exit Semester View";
+        button.id = "exitalt";
+        button.type = "button";
+        button.onclick = deactivate_alt_view;
+        
+        // button.style.position = "absolute";
+        // button.style.top = "100%";
+        display.appendChild(button);
+    }
 
     // Page type
     function get_page_type() {
-
         if(get_path("#form2 > div:nth-child(4) > table > tbody > tr:nth-child(3) > td > center > table > tbody > tr:nth-child(1) > td:nth-child(3)"))
             return "menu"
         if(get_path("#ContentPlaceHolder1_GridView1 > tbody > tr:nth-child(2)"))
@@ -422,7 +802,7 @@ I consider this program stable now.
             container.appendChild(element[0]);
     }
     function add_sort_button() {
-        let button = document.createElement("button");
+        let button = create_element("button");
         button.onclick = sort_assignments;
         button.textContent = "Sort";
         button.type="button";
@@ -533,14 +913,14 @@ I consider this program stable now.
 
     // Refreshing
     function add_reset_button () {
-        let button = document.createElement("button");
-        button.onclick = () => {window.location.reload(true)};
+        const button = create_element("button");
+        button.onclick = () => {reload_page()};
         button.textContent = "Reset";
         button.style.alignSelf = "center"
         button.style.transform = "translateX(1000%)"
-        element_by_id("ContentPlaceHolder1_GridView2").appendChild(button);
+        return button;
     }
-    safe_run(add_reset_button);
+    safe_run(() => {element_by_id("ContentPlaceHolder1_GridView2").appendChild(add_reset_button)});
 
     // Main program handler
     let handler_lock = false;
@@ -583,6 +963,7 @@ I consider this program stable now.
 
     // Run initial program
     program_handler();
+    create_alternative_display_button();
     // Initial sort
     safe_run(sort_assignments);
 })();
