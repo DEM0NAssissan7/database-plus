@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Database+
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.7.1
 // @description  A nice upgrade to the Peace Database
 // @author       Abdurahman Elmawi
 // @match        http://peaceacademy.net/*
@@ -273,7 +273,8 @@ I consider this program stable now.
             entry(grades[i]).contentEditable = true;
 
         entry(get_letter_grade(0)).style.fontWeight = "bold";
-        entry(round(0, 0));
+        entry(0);
+        entry(0.5).contentEditable = true;
 
 
         const button = create_element("button");
@@ -300,6 +301,7 @@ I consider this program stable now.
         entry("Midterm");
         entry("Semester 1");
         entry("%");
+        entry("Credits");
 
         return container;
     }
@@ -319,6 +321,7 @@ I consider this program stable now.
         entry("Final");
         entry("Semester 2");
         entry("%");
+        entry("Credits");
 
         return container;
     }
@@ -394,14 +397,17 @@ I consider this program stable now.
                 final_grade = final_grade / weights;
     
                 const letter_grade = get_letter_grade(round(final_grade, 0));
-                letter_grades.push(letter_grade);
+                letter_grades.push([letter_grade, get_num(nodes[6].innerText)]);
                 nodes[4].innerText = letter_grade;
                 nodes[5].innerText = round(final_grade, 0);
             }
             let gpa = 0;
-            for(let letter of letter_grades)
-                gpa += get_gpa_point(letter);
-            gpa = gpa / letter_grades.length;
+            let credits = 0;
+            for(let letter_credit of letter_grades) {
+                gpa += get_gpa_point(letter_credit[0]) * letter_credit[1];
+                credits += letter_credit[1];
+            }
+            gpa = gpa / credits;
             table_labels[i].textContent = round(gpa, 2);
         }
     }
