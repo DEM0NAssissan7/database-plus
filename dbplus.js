@@ -367,6 +367,8 @@ I consider this program stable now.
         return button;
     }
     function calc_final_grades() {
+        let cumilative_gpa = 0;
+        let cumilative_credits = 0;
         for(let i = 0; i < tables.length; i++) {
             let table = tables[i];
             let letter_grades = [];
@@ -407,9 +409,12 @@ I consider this program stable now.
                 gpa += get_gpa_point(letter_credit[0]) * letter_credit[1];
                 credits += letter_credit[1];
             }
+            cumilative_gpa += gpa;
+            cumilative_credits += credits;
             gpa = gpa / credits;
             table_labels[i].textContent = round(gpa, 2);
         }
+        table_labels[2].innerText = round(cumilative_gpa / cumilative_credits, 2);
     }
     function activate_alternative_display() {
         console.log("Activating alternative display");
@@ -434,7 +439,7 @@ I consider this program stable now.
         style_tables();
 
         // Add table labels
-        table_labels = [create_table_label(), create_table_label()];
+        table_labels = [create_table_label(), create_table_label(), create_table_label()];
 
         display.appendChild(tables[0]);
         display.appendChild(create_table_append_button(tables[0]));
@@ -448,6 +453,8 @@ I consider this program stable now.
 
         display.appendChild(add_reset_button());
         create_alt_deactivation_button();
+
+        display.appendChild(table_labels[2]);
     }
     function deactivate_alt_view() {
         display.remove();
