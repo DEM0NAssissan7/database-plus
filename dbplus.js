@@ -10,9 +10,8 @@
 // ==/UserScript==
 
 /* TODO:
-
-- Add alternative view button to allow viewing all quarters in one nice screen
-- Add feature to display cumilative semester grade and be able to see what grades are required for a certain GPA
+- Add ability to create categories
+- Refine category display
 
 I consider this program stable now.
 
@@ -608,16 +607,49 @@ I consider this program stable now.
     let group_summary = "";
     function update_group_summary() {
         group_summary = "";
+        let total_percent = 0;
         for(let group of assignment_groups) {
             let percentage = round(group.average / group.sum * 100);
             if(!percentage) percentage = "-";
             group_summary += group.name + ": " + group.percentage + "% (" + percentage + "%)\n";
+            total_percent += group.percentage;
             group.average = 0;
             group.sum = 0;
         }
+        group_summary += "Total: " + round(total_percent) + "%";
+    }
+    let created_categories = 1;
+    function create_group_add_button() {
+        const button = create_element("button");
+        button.textContent = "Add Category";
+        button.id = "addcategory";
+        button.type = "button";
+
+        const text = create_element("input");
+        text.placeholder = "Category Percent"
+        text.id = "grouppercent";
+
+        button.onclick = () => {
+            console.log(text.textContent);
+            let group = {
+                name: "Category " + created_categories++,
+                percentage: parseInt(text.value),
+                assignment_percent: 0,
+                average: 0,
+                sum: 0,
+                count: 0,
+                custom: true
+            };
+            assignment_groups.push(group);
+            
+        };
+
+        document.body.appendChild(button);
+        document.body.appendChild(text);
     }
     safe_run(probe_assignment_groups);
     safe_run(update_percentages);
+    safe_run(create_group_add_button);
 
     // Class grades
     function get_class_grade() {
