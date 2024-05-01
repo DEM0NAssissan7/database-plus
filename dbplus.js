@@ -618,16 +618,21 @@ I consider this program stable now.
         }
         group_summary += "Total: " + round(total_percent) + "%";
     }
+    let group_add_button, group_percent;
     let created_categories = 1;
     function create_group_add_button() {
         const button = create_element("button");
         button.textContent = "Add Category";
         button.id = "addcategory";
         button.type = "button";
+        button.style.visibility = 'hidden';
+        group_add_button = button;
 
         const text = create_element("input");
         text.placeholder = "Category Percent"
         text.id = "grouppercent";
+        text.style.visibility = 'hidden';
+        group_percent = text;
 
         button.onclick = () => {
             console.log(text.textContent);
@@ -646,6 +651,10 @@ I consider this program stable now.
 
         document.body.appendChild(button);
         document.body.appendChild(text);
+    }
+    function show_group_inputs() {
+        group_add_button.style.visibility = null;
+        group_percent.style.visibility = null;
     }
     safe_run(probe_assignment_groups);
     safe_run(update_percentages);
@@ -990,6 +999,7 @@ I consider this program stable now.
                     update_group_summary();
                     change_dom_text("[" + get_letter_grade(grade) + "] " + grade + "%");
                     change_sub_text(group_summary);
+                    show_group_inputs();
                     break;
                 case "menu":
                     if(apply_theming) student_theme();
