@@ -608,11 +608,22 @@ I consider this program stable now.
     function update_group_summary() {
         group_summary = "";
         let total_percent = 0;
+        for (let group of assignment_groups) {
+            if(group.percentage)
+                total_percent += group.percentage;
+        }
+        let total_points = 0;
         for(let group of assignment_groups) {
-            let percentage = round(group.average / group.sum * 100);
+            let points = (group.average / group.sum * 100) * (group.percentage / total_percent)
+            if(points)
+                total_points += points
+        }
+        for(let group of assignment_groups) {
+            let percentage = round(group.average / group.sum * 100, 0);
+            let points = round(percentage * group.percentage / total_percent, 1)
             if(!percentage) percentage = "-";
-            group_summary += group.name + ": " + group.percentage + "% (" + percentage + "%)\n";
-            total_percent += group.percentage;
+            if(!points) points = "-";
+            group_summary += group.name + ": " + group.percentage + "% (" + percentage + "%) [" + points + " pts]\n";
             group.average = 0;
             group.sum = 0;
         }
